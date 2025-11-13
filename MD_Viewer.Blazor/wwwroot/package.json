@@ -1,0 +1,17 @@
+{
+  "name": "md-viewer-blazor",
+  "version": "1.0.0",
+  "description": "TypeScript dependencies for MD Viewer Blazor components",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "marked": "^11.0.0",
+    "highlight.js": "^11.9.0",
+    "katex": "^0.16.9"
+  }
+}
+
