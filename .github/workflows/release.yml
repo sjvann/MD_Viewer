@@ -1,0 +1,113 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: 'MD_Viewer/MD_Viewer.csproj'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Install MAUI workload
+      run: dotnet workload install maui-windows
+      
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.PROJECT_PATH }}
+      
+    - name: Build (Framework-dependent)
+      run: |
+        dotnet publish ${{ env.PROJECT_PATH }} `
+          -c Release `
+          -f net10.0-windows10.0.19041.0 `
+          -r win-x64 `
+          --self-contained false `
+          -o ./publish/framework-dependent
+          
+    - name: Build (Self-contained)
+      run: |
+        dotnet publish ${{ env.PROJECT_PATH }} `
+          -c Release `
+          -f net10.0-windows10.0.19041.0 `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -o ./publish/self-contained
+          
+    - name: Create ZIP archives
+      run: |
+        Compress-Archive -Path ./publish/framework-dependent/* -DestinationPath ./MD_Viewer-win-x64.zip
+        Compress-Archive -Path ./publish/self-contained/* -DestinationPath ./MD_Viewer-win-x64-selfcontained.zip
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-builds
+        path: |
+          ./MD_Viewer-win-x64.zip
+          ./MD_Viewer-win-x64-selfcontained.zip
+
+  create-release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-builds
+        path: ./artifacts
+        
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: MD Viewer ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## MD Viewer ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 下載
+          
+          | 檔案 | 說明 |
+          |------|------|
+          | `MD_Viewer-win-x64.zip` | Windows 64 位元版本（需要 .NET 10 Runtime） |
+          | `MD_Viewer-win-x64-selfcontained.zip` | Windows 64 位元獨立版本（不需安裝 .NET） |
+          
+          ### 系統需求
+          - Windows 10 版本 1903 (19041) 或更新版本
+          
+          ### 變更記錄
+          - 請參閱 [CHANGELOG.md](https://github.com/sjvann/MD_Viewer/blob/master/CHANGELOG.md)
+        files: |
+          ./artifacts/MD_Viewer-win-x64.zip
+          ./artifacts/MD_Viewer-win-x64-selfcontained.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
