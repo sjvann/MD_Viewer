@@ -6,13 +6,14 @@ using MD_Viewer.Messages;
 using MD_Viewer.Models;
 using MD_Viewer.Services.Interfaces;
 using MD_Viewer.Services.Platform;
+using MD_Viewer.ViewModels;
 
 namespace MD_Viewer.ViewModels;
 
 /// <summary>
 /// 主 ViewModel
 /// </summary>
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IMainViewModel
 {
 	private readonly IFileSystemService _fileSystemService;
 	private readonly IMarkdownService _markdownService;
@@ -71,10 +72,10 @@ public partial class MainViewModel : ObservableObject
 	private void InitializeExportFormats()
 	{
 		var formats = _exportService.GetSupportedFormats();
-		SupportedExportFormats.Clear();
+		_supportedExportFormats.Clear();
 		foreach (var format in formats)
 		{
-			SupportedExportFormats.Add(format);
+			_supportedExportFormats.Add(format);
 		}
 	}
 
@@ -86,12 +87,12 @@ public partial class MainViewModel : ObservableObject
 	/// <summary>
 	/// 預覽 ViewModel
 	/// </summary>
-	public PreviewViewModel PreviewViewModel { get; }
+	public IPreviewViewModel? PreviewViewModel { get; }
 
 	/// <summary>
 	/// 編輯 ViewModel
 	/// </summary>
-	public EditViewModel EditViewModel { get; }
+	public IEditViewModel? EditViewModel { get; }
 
 	/// <summary>
 	/// 當前檢視模式
@@ -143,7 +144,7 @@ public partial class MainViewModel : ObservableObject
 			if (SetProperty(ref _currentFileContent, value))
 			{
 				// 當檔案內容變更時，更新預覽和編輯器
-				PreviewViewModel?.UpdatePreviewCommand?.Execute(value);
+				PreviewViewModel?.UpdatePreview(value);
 				EditViewModel?.LoadContent(value);
 				// 通知 CanExport 更新
 				OnPropertyChanged(nameof(CanExport));
@@ -279,7 +280,8 @@ public partial class MainViewModel : ObservableObject
 	/// <summary>
 	/// 支援的匯出格式列表
 	/// </summary>
-	public ObservableCollection<ExportFormat> SupportedExportFormats { get; } = new();
+	public IEnumerable<ExportFormat> SupportedExportFormats => _supportedExportFormats;
+	private readonly ObservableCollection<ExportFormat> _supportedExportFormats = new();
 
 	/// <summary>
 	/// 切換編輯模式命令

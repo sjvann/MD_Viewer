@@ -1,0 +1,47 @@
+<Project>
+  <!-- 為 Blazor WebView 添加必要的目標 -->
+  <!-- 這些目標由 Blazor WebView 套件需要，用於準備靜態 Web 資源 -->
+  
+  <Target Name="StaticWebAssetsPrepareForRun" 
+          BeforeTargets="Build;Publish"
+          Condition="'$(EnableDefaultItems)' == 'true'">
+    <!-- 靜態資源會從引用的 Blazor 專案中自動包含 -->
+    <Message Text="準備靜態 Web 資源..." Importance="normal" />
+  </Target>
+
+  <Target Name="StaticWebAssetsPrepareForPublish" 
+          BeforeTargets="Publish"
+          Condition="'$(EnableDefaultItems)' == 'true'">
+    <!-- 準備發布時的靜態 Web 資源 -->
+    <Message Text="準備發布靜態 Web 資源..." Importance="normal" />
+  </Target>
+
+  <Target Name="LoadStaticWebAssetsPublishManifest" 
+          BeforeTargets="Publish"
+          Condition="'$(EnableDefaultItems)' == 'true'">
+    <!-- 載入發布清單 -->
+    <Message Text="載入靜態 Web 資源發布清單..." Importance="normal" />
+  </Target>
+
+  <!-- 覆寫 ConvertStaticWebAssetsToMauiAssets 目標，提供簡化實作 -->
+  <Target Name="ConvertStaticWebAssetsToMauiAssets"
+          BeforeTargets="GetMauiItems;ResizetizeCollectItems;_CollectBundleResources;_CollectHotRestartBundleResources;_CheckForContent"
+          DependsOnTargets="ResolveProjectReferences;StaticWebAssetsPrepareForRun;StaticWebAssetsPrepareForPublish;LoadStaticWebAssetsPublishManifest"
+          Condition="'$(EnableDefaultItems)' == 'true'">
+    <!-- 簡化實作：直接從 StaticWebAsset 項目創建 MauiAsset -->
+    <ItemGroup>
+      <_MauiStaticWebAssetWithTargetPath Include="@(StaticWebAsset)">
+        <TargetPath Condition="'%(StaticWebAsset.TargetPath)' == ''">wwwroot/%(StaticWebAsset.Identity)</TargetPath>
+        <TargetPath Condition="'%(StaticWebAsset.TargetPath)' != ''">wwwroot/%(StaticWebAsset.TargetPath)</TargetPath>
+      </_MauiStaticWebAssetWithTargetPath>
+    </ItemGroup>
+
+    <ItemGroup>
+      <MauiAsset Include="%(_MauiStaticWebAssetWithTargetPath.Identity)">
+        <Link>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</Link>
+        <TargetPath>%(_MauiStaticWebAssetWithTargetPath.TargetPath)</TargetPath>
+      </MauiAsset>
+    </ItemGroup>
+  </Target>
+</Project>
+

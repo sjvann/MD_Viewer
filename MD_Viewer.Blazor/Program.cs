@@ -1,28 +1,7 @@
-using MD_Viewer.Blazor.Components;
+// 此檔案在 Blazor WebView 模式下不需要
+// Blazor 組件會直接嵌入到 MAUI 專案中
+// 保留此檔案以避免編譯錯誤，但不會被使用
 
-var builder = WebApplication.CreateBuilder(args);
+namespace MD_Viewer.Blazor;
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForErrors: true);
-
-app.UseHttpsRedirection();
-
-app.UseAntiforgery();
-
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.Run();
+// 空的命名空間，僅用於避免編譯錯誤

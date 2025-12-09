@@ -5,6 +5,9 @@ using MD_Viewer.Services.Interfaces;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using Markdig;
+using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 using QuestPdfColors = QuestPDF.Helpers.Colors;
 
 namespace MD_Viewer.Services;
@@ -29,7 +32,7 @@ public class ExportService : IExportService
 	}
 
 	/// <summary>
-	/// 匯出為 HTML
+	/// 匯出為 HTML（使用預覽的完整 HTML 樣式）
 	/// </summary>
 	public async Task ExportToHtmlAsync(string markdown, string outputPath, ExportOptions? options = null)
 	{
@@ -48,8 +51,8 @@ public class ExportService : IExportService
 			// 使用 MarkdownService 將 Markdown 轉換為 HTML
 			var htmlContent = _markdownService.RenderToHtml(markdown);
 
-			// 包裝為完整的 HTML 文件
-			var fullHtml = WrapHtmlContent(htmlContent, options);
+			// 包裝為完整的 HTML 文件（與預覽一致的樣式）
+			var fullHtml = WrapHtmlForExport(htmlContent, options);
 
 			// 寫入檔案
 			await _fileSystemService.WriteFileAsync(outputPath, fullHtml);
@@ -64,43 +67,101 @@ public class ExportService : IExportService
 	}
 
 	/// <summary>
-	/// 包裝 HTML 內容為完整的 HTML 文件
+	/// 包裝 HTML 內容為完整的匯出 HTML（與預覽樣式一致）
 	/// </summary>
-	private string WrapHtmlContent(string content, ExportOptions? options)
+	private string WrapHtmlForExport(string content, ExportOptions? options)
 	{
-		if (string.IsNullOrEmpty(content))
-			return string.Empty;
-
-		var includeStyles = options?.IncludeStyles ?? true;
-		var customCssPath = options?.CustomCssPath;
-
-		// 讀取自訂 CSS（如果提供）
-		string? customCss = null;
-		if (!string.IsNullOrEmpty(customCssPath) && File.Exists(customCssPath))
-		{
-			try
-			{
-				customCss = File.ReadAllText(customCssPath);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogWarning(ex, "無法讀取自訂 CSS 檔案: {CssPath}", customCssPath);
-			}
-		}
-
-		// 基本 CSS 樣式（參考 PreviewViewModel）
-		var defaultCss = includeStyles ? GetDefaultCss() : string.Empty;
-		var cssContent = string.IsNullOrEmpty(customCss) ? defaultCss : $"{defaultCss}\n{customCss}";
-
-		// 包裝為完整的 HTML 文件
+		var title = options?.Title ?? "Markdown Document";
+		
 		return $@"<!DOCTYPE html>
-<html>
+<html lang=""zh-TW"">
 <head>
     <meta charset=""utf-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    {(includeStyles ? $@"<style>
-{cssContent}
-</style>" : "")}
+    <title>{System.Web.HttpUtility.HtmlEncode(title)}</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', 'Microsoft YaHei', sans-serif;
+            padding: 40px;
+            line-height: 1.6;
+            color: #24292e;
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }}
+        h1, h2, h3, h4, h5, h6 {{
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+            color: #24292e;
+        }}
+        h1 {{ font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
+        h2 {{ font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }}
+        h3 {{ font-size: 1.25em; }}
+        h4 {{ font-size: 1em; }}
+        h5 {{ font-size: 0.875em; }}
+        h6 {{ font-size: 0.85em; color: #6a737d; }}
+        p {{ margin-top: 0; margin-bottom: 16px; }}
+        ul, ol {{ margin-top: 0; margin-bottom: 16px; padding-left: 2em; }}
+        li {{ margin-top: 0.25em; }}
+        blockquote {{
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            margin: 0 0 16px 0;
+        }}
+        code {{
+            background-color: rgba(27, 31, 35, 0.05);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }}
+        pre {{
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            line-height: 1.45;
+        }}
+        pre code {{
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }}
+        table {{
+            border-collapse: collapse;
+            margin-top: 0;
+            margin-bottom: 16px;
+            width: 100%;
+        }}
+        table th, table td {{
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }}
+        table th {{
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }}
+        table tr:nth-child(2n) {{
+            background-color: #f6f8fa;
+        }}
+        img {{ max-width: 100%; height: auto; }}
+        a {{ color: #0366d6; text-decoration: none; }}
+        a:hover {{ text-decoration: underline; }}
+        hr {{
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #e1e4e8;
+            border: 0;
+        }}
+        @media print {{
+            body {{ padding: 20px; }}
+            pre {{ white-space: pre-wrap; word-wrap: break-word; }}
+        }}
+    </style>
 </head>
 <body>
     {content}
@@ -109,109 +170,8 @@ public class ExportService : IExportService
 	}
 
 	/// <summary>
-	/// 取得預設 CSS 樣式
+	/// 匯出為 PDF（使用 Markdig AST 解析，保持與預覽一致的格式）
 	/// </summary>
-	private string GetDefaultCss()
-	{
-		return @"        /* 基本 Markdown 樣式 */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            padding: 20px;
-            line-height: 1.6;
-            color: #333;
-            max-width: 100%;
-            word-wrap: break-word;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            margin-top: 24px;
-            margin-bottom: 16px;
-            font-weight: 600;
-            line-height: 1.25;
-        }
-        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
-        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
-        h3 { font-size: 1.25em; }
-        h4 { font-size: 1em; }
-        h5 { font-size: 0.875em; }
-        h6 { font-size: 0.85em; color: #6a737d; }
-        p {
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-        ul, ol {
-            margin-top: 0;
-            margin-bottom: 16px;
-            padding-left: 2em;
-        }
-        li {
-            margin-top: 0.25em;
-        }
-        blockquote {
-            padding: 0 1em;
-            color: #6a737d;
-            border-left: 0.25em solid #dfe2e5;
-            margin: 0;
-        }
-        code {
-            background-color: rgba(27, 31, 35, 0.05);
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-            font-size: 85%;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        }
-        pre {
-            background-color: #f6f8fa;
-            padding: 16px;
-            border-radius: 6px;
-            overflow-x: auto;
-            line-height: 1.45;
-        }
-        pre code {
-            background-color: transparent;
-            padding: 0;
-            font-size: 100%;
-        }
-        table {
-            border-collapse: collapse;
-            margin-top: 0;
-            margin-bottom: 16px;
-            width: 100%;
-        }
-        table th, table td {
-            border: 1px solid #dfe2e5;
-            padding: 6px 13px;
-        }
-        table th {
-            background-color: #f6f8fa;
-            font-weight: 600;
-        }
-        table tr:nth-child(2n) {
-            background-color: #f6f8fa;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-        }
-        a {
-            color: #0366d6;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        hr {
-            height: 0.25em;
-            padding: 0;
-            margin: 24px 0;
-            background-color: #e1e4e8;
-            border: 0;
-        }
-        .math {
-            font-family: 'Times New Roman', serif;
-            font-style: italic;
-        }";
-	}
-
 	public async Task ExportToPdfAsync(string markdown, string outputPath, ExportOptions? options = null)
 	{
 		try
@@ -226,8 +186,8 @@ public class ExportService : IExportService
 				throw new ArgumentException("輸出路徑不能為空", nameof(outputPath));
 			}
 
-			// 基於 Markdown 內容，建立簡易的 PDF 版面（MVP：支援標題、段落、清單、程式碼區塊）
-			var pdfBytes = GeneratePdfFromMarkdown(markdown, options);
+			// 使用 Markdig AST 解析並生成 PDF
+			var pdfBytes = GeneratePdfFromMarkdownAst(markdown, options);
 
 			// 直接寫入檔案
 			await File.WriteAllBytesAsync(outputPath, pdfBytes);
@@ -242,15 +202,17 @@ public class ExportService : IExportService
 	}
 
 	/// <summary>
-	/// 使用 QuestPDF 產生 PDF（MVP：基本 Markdown 映射）
+	/// 使用 Markdig AST 產生 PDF（更準確的格式映射）
 	/// </summary>
-	private byte[] GeneratePdfFromMarkdown(string markdown, ExportOptions? options)
+	private byte[] GeneratePdfFromMarkdownAst(string markdown, ExportOptions? options)
 	{
-		// QuestPDF
 		QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
-		// 解析為行（簡易方案）：可改為 Markdig AST 以提高完整性
-		var lines = markdown.Replace("\r\n", "\n").Split('\n');
+		// 使用 Markdig 解析為 AST
+		var pipeline = new MarkdownPipelineBuilder()
+			.UseAdvancedExtensions()
+			.Build();
+		var document = Markdown.Parse(markdown, pipeline);
 
 		// 版面設定
 		var pageSize = options?.PageSize switch
@@ -267,148 +229,37 @@ public class ExportService : IExportService
 		{
 			container.Page(page =>
 			{
-				page.Size(pageSize);
-				if (isLandscape) page.Size(pageSize.Landscape());
-				page.Margin(30);
-				page.DefaultTextStyle(ts => ts.FontSize(12));
+				page.Size(isLandscape ? pageSize.Landscape() : pageSize);
+				page.Margin(40);
+				page.DefaultTextStyle(ts => ts.FontSize(11).FontFamily("Microsoft JhengHei"));
 
-				// 頁首頁尾
+				// 頁首
 				if (!string.IsNullOrWhiteSpace(options?.Title))
 				{
-					page.Header().Row(row =>
+					page.Header().PaddingBottom(10).Row(row =>
 					{
-						row.RelativeItem().Text(options!.Title).SemiBold().FontSize(14);
-						if (!string.IsNullOrWhiteSpace(options?.Author))
-							row.ConstantItem(200).AlignRight().Text(options!.Author).FontSize(10);
+						row.RelativeItem().Text(options!.Title).SemiBold().FontSize(10).FontColor(QuestPdfColors.Grey.Darken1);
 					});
 				}
 
+				// 頁尾（頁碼）
 				if (options?.IncludePageNumbers == true)
 				{
 					page.Footer().AlignCenter().Text(x =>
 					{
-						x.Span("第 ");
-						x.CurrentPageNumber();
-						x.Span(" 頁 / 共 ");
-						x.TotalPages();
-						x.Span(" 頁");
+						x.Span("第 ").FontSize(9);
+						x.CurrentPageNumber().FontSize(9);
+						x.Span(" 頁，共 ").FontSize(9);
+						x.TotalPages().FontSize(9);
+						x.Span(" 頁").FontSize(9);
 					});
 				}
 
-				page.Content().PaddingVertical(10).Column(col =>
+				// 內容
+				page.Content().PaddingVertical(5).Column(col =>
 				{
-					bool inCodeBlock = false;
-
-					foreach (var raw in lines)
-					{
-						var line = raw ?? string.Empty;
-
-						// 圍欄程式碼塊 ```
-						if (line.StartsWith("```"))
-						{
-							inCodeBlock = !inCodeBlock;
-							// 起訖行不輸出內容
-							continue;
-						}
-
-						if (inCodeBlock)
-						{
-							col.Item().Background(QuestPdfColors.Grey.Lighten3).Padding(6).Text(line).FontSize(10);
-							continue;
-						}
-
-						// 引用區塊（> ）
-						if (line.StartsWith("> "))
-						{
-							var quoteText = line.Substring(2);
-							col.Item().Background(QuestPdfColors.Grey.Lighten4).Padding(8).BorderLeft(3)
-								.BorderColor(QuestPdfColors.Grey.Medium)
-								.Text(t => RenderInlineMarkdown(t, quoteText));
-							continue;
-						}
-
-						// 標題（# 至 ######）
-						if (line.StartsWith("###### "))
-						{
-							col.Item().Text(t => { t.Span(line.Substring(7)).FontSize(12).SemiBold(); });
-							continue;
-						}
-						if (line.StartsWith("##### "))
-						{
-							col.Item().Text(t => { t.Span(line.Substring(6)).FontSize(13).SemiBold(); });
-							continue;
-						}
-						if (line.StartsWith("#### "))
-						{
-							col.Item().Text(t => { t.Span(line.Substring(5)).FontSize(14).SemiBold(); });
-							continue;
-						}
-						if (line.StartsWith("### "))
-						{
-							col.Item().Text(t => { t.Span(line.Substring(4)).FontSize(16).SemiBold(); });
-							continue;
-						}
-						if (line.StartsWith("## "))
-						{
-							col.Item().Text(t => { t.Span(line.Substring(3)).FontSize(18).SemiBold(); });
-							continue;
-						}
-						if (line.StartsWith("# "))
-						{
-							col.Item().Text(t => { t.Span(line.Substring(2)).FontSize(22).SemiBold(); });
-							continue;
-						}
-
-						// 無序清單
-						if (line.StartsWith("- ") || line.StartsWith("* "))
-						{
-							col.Item().Row(row =>
-							{
-								row.ConstantItem(10).Text("•");
-								row.RelativeItem().Text(t => RenderInlineMarkdown(t, line.Substring(2)));
-							});
-							continue;
-						}
-
-						// 有序清單（簡化偵測：數字. 空白）
-						var trimmed = line.TrimStart();
-						if (trimmed.Length > 2 && char.IsDigit(trimmed[0]) && trimmed.IndexOf('.') == 1 && trimmed[2] == ' ')
-						{
-							col.Item().Row(row =>
-							{
-								row.ConstantItem(16).Text(trimmed.Substring(0, 2));
-								row.RelativeItem().Text(t => RenderInlineMarkdown(t, trimmed.Substring(3)));
-							});
-							continue;
-						}
-
-						// 表格（簡化：直接原文等寬字體輸出）
-						if (line.Contains('|'))
-						{
-							col.Item().Text(line).FontSize(10);
-							continue;
-						}
-
-						// 圖片（簡化：以文字方式輸出 alt 和 url） ![alt](url)
-						var imgMatch = Regex.Match(line, @"!\[(.*?)\]\((.*?)\)");
-						if (imgMatch.Success)
-						{
-							var alt = imgMatch.Groups[1].Value;
-							var url = imgMatch.Groups[2].Value;
-							col.Item().Text($"[圖片] {alt} ({url})");
-							continue;
-						}
-
-						// 空行 → 段落間距
-						if (string.IsNullOrWhiteSpace(line))
-						{
-							col.Item().Text(string.Empty).LineHeight(0.8f);
-							continue;
-						}
-
-						// 一般段落
-						col.Item().Text(t => RenderInlineMarkdown(t, line));
-					}
+					col.Spacing(8);
+					RenderMarkdownDocument(col, document);
 				});
 			});
 		}).GeneratePdf(stream);
@@ -417,62 +268,218 @@ public class ExportService : IExportService
 	}
 
 	/// <summary>
-	/// 簡易處理行內 Markdown（行內程式碼與連結）：`code`、[text](url)
+	/// 遞迴渲染 Markdown 文件
 	/// </summary>
-	private void RenderInlineMarkdown(TextDescriptor text, string content)
+	private void RenderMarkdownDocument(ColumnDescriptor col, MarkdownDocument document)
 	{
-		if (string.IsNullOrEmpty(content))
+		foreach (var block in document)
 		{
-			text.Span(string.Empty);
-			return;
+			RenderBlock(col, block);
 		}
+	}
 
-		// 先處理連結，將其切成片段
-		var linkPattern = new Regex(@"\[(.+?)\]\((.+?)\)");
-		var parts = new List<(string type, string value, string? extra)>();
-		int lastIndex = 0;
-		foreach (Match m in linkPattern.Matches(content))
+	/// <summary>
+	/// 渲染單個區塊
+	/// </summary>
+	private void RenderBlock(ColumnDescriptor col, Block block)
+	{
+		switch (block)
 		{
-			if (m.Index > lastIndex)
-			{
-				parts.Add(("text", content.Substring(lastIndex, m.Index - lastIndex), null));
-			}
-			parts.Add(("link", m.Groups[1].Value, m.Groups[2].Value)); // (text, url)
-			lastIndex = m.Index + m.Length;
-		}
-		if (lastIndex < content.Length)
-		{
-			parts.Add(("text", content.Substring(lastIndex), null));
-		}
+			case HeadingBlock heading:
+				var fontSize = heading.Level switch
+				{
+					1 => 24,
+					2 => 20,
+					3 => 16,
+					4 => 14,
+					5 => 12,
+					_ => 11
+				};
+				col.Item().PaddingTop(heading.Level <= 2 ? 16 : 8).Text(text =>
+				{
+					text.Span(GetInlineText(heading.Inline)).FontSize(fontSize).SemiBold();
+				});
+				if (heading.Level <= 2)
+				{
+					col.Item().PaddingTop(4).LineHorizontal(1).LineColor(QuestPdfColors.Grey.Lighten2);
+				}
+				break;
 
-		// 對每一段再處理行內程式碼
-		foreach (var part in parts)
-		{
-			if (part.type == "link")
-			{
-				text.Span(part.value);
-				if (!string.IsNullOrEmpty(part.extra))
-				{
-					text.Span($" ({part.extra})").FontSize(10);
-				}
-				continue;
-			}
+			case ParagraphBlock paragraph:
+				col.Item().Text(text => RenderInlines(text, paragraph.Inline));
+				break;
 
-			// 行內程式碼以 ` 分割
-			var segments = part.value.Split('`');
-			for (int i = 0; i < segments.Length; i++)
+			case ListBlock list:
+				RenderList(col, list);
+				break;
+
+			case FencedCodeBlock fencedCode:
+				var codeText = string.Join("\n", fencedCode.Lines);
+				col.Item()
+					.Background(QuestPdfColors.Grey.Lighten4)
+					.Border(1)
+					.BorderColor(QuestPdfColors.Grey.Lighten2)
+					.Padding(12)
+					.Text(codeText)
+					.FontFamily("Consolas")
+					.FontSize(10);
+				break;
+
+			case CodeBlock code:
+				var plainCode = string.Join("\n", code.Lines);
+				col.Item()
+					.Background(QuestPdfColors.Grey.Lighten4)
+					.Padding(12)
+					.Text(plainCode)
+					.FontFamily("Consolas")
+					.FontSize(10);
+				break;
+
+			case QuoteBlock quote:
+				col.Item()
+					.BorderLeft(3)
+					.BorderColor(QuestPdfColors.Grey.Medium)
+					.PaddingLeft(12)
+					.Column(quoteCol =>
+					{
+						foreach (var child in quote)
+						{
+							if (child is ParagraphBlock p)
+							{
+								quoteCol.Item().Text(text =>
+								{
+									text.DefaultTextStyle(ts => ts.FontColor(QuestPdfColors.Grey.Darken1).Italic());
+									RenderInlines(text, p.Inline);
+								});
+							}
+						}
+					});
+				break;
+
+			case ThematicBreakBlock:
+				col.Item().PaddingVertical(8).LineHorizontal(2).LineColor(QuestPdfColors.Grey.Lighten2);
+				break;
+
+			case HtmlBlock:
+				// HTML 區塊跳過（PDF 不支援）
+				break;
+
+			default:
+				// 其他區塊嘗試取得文字
+				break;
+		}
+	}
+
+	/// <summary>
+	/// 渲染清單
+	/// </summary>
+	private void RenderList(ColumnDescriptor col, ListBlock list)
+	{
+		int index = 1;
+		foreach (var item in list)
+		{
+			if (item is ListItemBlock listItem)
 			{
-				var seg = segments[i];
-				if (i % 2 == 1)
+				col.Item().Row(row =>
 				{
-					text.Span(seg).FontSize(10);
-				}
-				else
-				{
-					text.Span(seg);
-				}
+					var bullet = list.IsOrdered ? $"{index++}." : "•";
+					row.ConstantItem(20).Text(bullet).FontSize(11);
+					row.RelativeItem().Column(itemCol =>
+					{
+						foreach (var child in listItem)
+						{
+							if (child is ParagraphBlock p)
+							{
+								itemCol.Item().Text(text => RenderInlines(text, p.Inline));
+							}
+							else if (child is ListBlock nestedList)
+							{
+								itemCol.Item().PaddingLeft(15).Column(nestedCol => RenderList(nestedCol, nestedList));
+							}
+						}
+					});
+				});
 			}
 		}
+	}
+
+	/// <summary>
+	/// 渲染行內元素
+	/// </summary>
+	private void RenderInlines(TextDescriptor text, ContainerInline? container)
+	{
+		if (container == null) return;
+
+		foreach (var inline in container)
+		{
+			switch (inline)
+			{
+				case LiteralInline literal:
+					text.Span(literal.Content.ToString());
+					break;
+
+				case EmphasisInline emphasis:
+					var emphasisText = GetInlineText(emphasis);
+					if (emphasis.DelimiterCount == 2)
+					{
+						text.Span(emphasisText).Bold();
+					}
+					else
+					{
+						text.Span(emphasisText).Italic();
+					}
+					break;
+
+				case CodeInline code:
+					text.Span(code.Content)
+						.FontFamily("Consolas")
+						.FontSize(10)
+						.BackgroundColor(QuestPdfColors.Grey.Lighten4);
+					break;
+
+				case LinkInline link:
+					var linkText = GetInlineText(link);
+					text.Span(linkText).FontColor(QuestPdfColors.Blue.Medium).Underline();
+					break;
+
+				case LineBreakInline:
+					text.Span("\n");
+					break;
+
+				default:
+					// 其他行內元素
+					break;
+			}
+		}
+	}
+
+	/// <summary>
+	/// 取得行內元素的純文字
+	/// </summary>
+	private string GetInlineText(ContainerInline? container)
+	{
+		if (container == null) return string.Empty;
+
+		var sb = new System.Text.StringBuilder();
+		foreach (var inline in container)
+		{
+			switch (inline)
+			{
+				case LiteralInline literal:
+					sb.Append(literal.Content.ToString());
+					break;
+				case EmphasisInline emphasis:
+					sb.Append(GetInlineText(emphasis));
+					break;
+				case CodeInline code:
+					sb.Append(code.Content);
+					break;
+				case LinkInline link:
+					sb.Append(GetInlineText(link));
+					break;
+			}
+		}
+		return sb.ToString();
 	}
 
 	public Task ExportToDocxAsync(string markdown, string outputPath, ExportOptions? options = null)
@@ -489,10 +496,8 @@ public class ExportService : IExportService
 	{
 		return new List<ExportFormat>
 		{
-			new ExportFormat { Name = "HTML", Extension = ".html", Description = "HTML 網頁格式", IsEnabled = true },
 			new ExportFormat { Name = "PDF", Extension = ".pdf", Description = "PDF 文件格式", IsEnabled = true },
-			new ExportFormat { Name = "DOCX", Extension = ".docx", Description = "Microsoft Word 格式", IsEnabled = false },
-			new ExportFormat { Name = "ODF", Extension = ".odt", Description = "OpenDocument 格式", IsEnabled = false }
+			new ExportFormat { Name = "HTML", Extension = ".html", Description = "HTML 網頁格式", IsEnabled = true },
 		};
 	}
 }

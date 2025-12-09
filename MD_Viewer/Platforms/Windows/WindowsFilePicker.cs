@@ -1,6 +1,7 @@
 #if WINDOWS
 using Microsoft.Extensions.Logging;
 using MD_Viewer.Services.Platform;
+using WinRT.Interop;
 
 namespace MD_Viewer.Platforms.Windows;
 
@@ -25,6 +26,14 @@ public class WindowsFilePicker : IPlatformFilePicker
 		{
 			var picker = new global::Windows.Storage.Pickers.FileSavePicker();
 			
+			// 取得視窗句柄並初始化 picker（MAUI 必需）
+			var mauiWindow = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault();
+			if (mauiWindow?.Handler?.PlatformView is MauiWinUIWindow winUIWindow)
+			{
+				var hwnd = WindowNative.GetWindowHandle(winUIWindow);
+				InitializeWithWindow.Initialize(picker, hwnd);
+			}
+			
 			// 設定初始位置
 			picker.SuggestedStartLocation = global::Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
 
@@ -39,7 +48,7 @@ public class WindowsFilePicker : IPlatformFilePicker
 			else
 			{
 				// 預設為所有檔案
-				picker.FileTypeChoices.Add("所有檔案", new List<string> { "*" });
+				picker.FileTypeChoices.Add("所有檔案", new List<string> { "." });
 			}
 
 			// 設定預設檔名
@@ -53,15 +62,17 @@ public class WindowsFilePicker : IPlatformFilePicker
 			
 			if (file != null)
 			{
+				_logger.LogInformation("檔案儲存路徑: {Path}", file.Path);
 				return file.Path;
 			}
 
+			_logger.LogInformation("使用者取消儲存對話框");
 			return null;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "顯示檔案儲存對話框時發生錯誤");
-			return null;
+			throw;
 		}
 	}
 }

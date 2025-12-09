@@ -3,13 +3,14 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using MD_Viewer.Services.Interfaces;
+using MD_Viewer.ViewModels;
 
 namespace MD_Viewer.ViewModels;
 
 /// <summary>
 /// 預覽 ViewModel
 /// </summary>
-public partial class PreviewViewModel : ObservableObject
+public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
 {
 	private readonly IMarkdownService _markdownService;
 	private readonly IMessenger _messenger;
@@ -90,7 +91,6 @@ public partial class PreviewViewModel : ObservableObject
 	/// <summary>
 	/// 更新預覽命令
 	/// </summary>
-	[RelayCommand]
 	public void UpdatePreview(string? markdown)
 	{
 		try

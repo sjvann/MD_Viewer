@@ -1,0 +1,303 @@
+@page "/viewer"
+@page "/"
+@using MD_Viewer.Blazor.Components
+@using MD_Viewer.ViewModels
+@using MD_Viewer.Models
+@using Microsoft.AspNetCore.Components
+@inject IMainViewModel ViewModel
+@implements IDisposable
+
+<PageTitle>MD Viewer</PageTitle>
+
+<div class="viewer-container">
+    <!-- 工具列區域 -->
+    <div class="toolbar">
+        <div class="toolbar-content">
+            <h1 class="app-title">MD Viewer</h1>
+            
+            <button class="toolbar-btn" @onclick="ToggleEditMode">
+                @ViewModel.EditButtonText
+            </button>
+            
+            <button class="toolbar-btn" @onclick="SaveFile" disabled="@(!ViewModel.CanSave)">
+                儲存
+            </button>
+            
+            @if (!string.IsNullOrEmpty(ViewModel.SaveMessage))
+            {
+                <span class="toolbar-message">@ViewModel.SaveMessage</span>
+            }
+            
+            <button class="toolbar-btn" @onclick="ToggleExportMenu" disabled="@(!ViewModel.CanExport)">
+                匯出
+            </button>
+            
+            @if (ViewModel.IsExporting)
+            {
+                <div class="spinner"></div>
+            }
+            
+            @if (!string.IsNullOrEmpty(ViewModel.ExportMessage))
+            {
+                <span class="toolbar-message">@ViewModel.ExportMessage</span>
+            }
+        </div>
+    </div>
+
+    <!-- 遮罩（點擊關閉匯出選單） -->
+    @if (ViewModel.ShowExportMenu)
+    {
+        <div class="export-overlay" @onclick="CloseExportMenu"></div>
+    }
+
+    <!-- 匯出選單 Popup（確保內容完整顯示，不被截斷） -->
+    @if (ViewModel.ShowExportMenu)
+    {
+        <div class="export-menu">
+            <div class="export-menu-content">
+                <!-- PDF 選項區 -->
+                <div class="pdf-options-section">
+                    <div class="pdf-options-scroll">
+                        <label class="pdf-options-label">PDF 選項：</label>
+                        <button class="pdf-option-btn" @onclick="SetPageSizeA4">A4</button>
+                        <button class="pdf-option-btn" @onclick="SetPageSizeLetter">Letter</button>
+                        <button class="pdf-option-btn" @onclick="SetPageSizeLegal">Legal</button>
+                        <span class="pdf-options-separator"></span>
+                        <button class="pdf-option-btn" @onclick="SetOrientationPortrait">直向</button>
+                        <button class="pdf-option-btn" @onclick="SetOrientationLandscape">橫向</button>
+                    </div>
+                </div>
+                
+                <div class="export-options-row">
+                    <label>頁碼：</label>
+                    <input type="checkbox" @bind="ViewModel.IncludePageNumbers" />
+                    <span class="export-info">@ViewModel.ExportPageSize.ToString()</span>
+                    <span class="export-info">@ViewModel.ExportOrientation.ToString()</span>
+                </div>
+
+                <!-- 格式清單 -->
+                <div class="export-formats-list">
+                    @foreach (var format in ViewModel.SupportedExportFormats)
+                    {
+                        <div class="export-format-item @(format.IsEnabled ? "enabled" : "disabled")" 
+                             @onclick="@(() => OnExportFormatClick(format))"
+                             @onclick:preventDefault="true"
+                             @onclick:stopPropagation="true"
+                             style="cursor: @(format.IsEnabled ? "pointer" : "default")">
+                            <div class="export-format-content">
+                                <div class="export-format-name">@format.Name</div>
+                                <div class="export-format-desc">@format.Description</div>
+                            </div>
+                            @if (format.IsEnabled)
+                            {
+                                <span class="export-format-check">✓</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 主要內容區域 -->
+    <div class="main-content">
+        <!-- 檔案樹區域（左側） -->
+        <div class="file-tree-panel">
+            <!-- TODO: 實作檔案樹 -->
+            <p>檔案樹區域</p>
+        </div>
+
+        <!-- 預覽/編輯區域（右側） -->
+        <div class="content-panel">
+            @if (ViewModel.IsEditMode)
+            {
+                <!-- 編輯模式：雙欄佈局 -->
+                <div class="edit-mode-layout">
+                    <div class="editor-panel">
+                        <!-- 編輯器：使用 EditViewModel 的內容 -->
+                        <textarea class="markdown-editor" 
+                                  @bind="ViewModel.EditViewModel.MarkdownContent"
+                                  @bind:event="oninput"
+                                  placeholder="在此輸入 Markdown 內容..."></textarea>
+                    </div>
+                    <div class="preview-panel">
+                        <!-- 預覽：使用 PreviewViewModel 渲染後的 HTML -->
+                        @if (ViewModel.PreviewViewModel != null)
+                        {
+                            @if (ViewModel.PreviewViewModel.IsLoading)
+                            {
+                                <div class="loading-indicator">載入中...</div>
+                            }
+                            else if (!string.IsNullOrEmpty(ViewModel.PreviewViewModel.ErrorMessage))
+                            {
+                                <div class="error-message">@ViewModel.PreviewViewModel.ErrorMessage</div>
+                            }
+                            else if (ViewModel.PreviewViewModel.ShowWebView)
+                            {
+                                <div class="markdown-preview" 
+                                     @ref="previewContainer">
+                                    @if (_renderedHtmlMarkup != null)
+                                    {
+                                        @_renderedHtmlMarkup
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-state">請選擇一個 Markdown 檔案以預覽內容</div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- 預覽模式：只顯示預覽區 -->
+                <div class="preview-panel">
+                    @if (ViewModel.PreviewViewModel != null)
+                    {
+                        @if (ViewModel.PreviewViewModel.IsLoading)
+                        {
+                            <div class="loading-indicator">載入中...</div>
+                        }
+                        else if (!string.IsNullOrEmpty(ViewModel.PreviewViewModel.ErrorMessage))
+                        {
+                            <div class="error-message">@ViewModel.PreviewViewModel.ErrorMessage</div>
+                        }
+                        else if (ViewModel.PreviewViewModel.ShowWebView)
+                        {
+                            <div class="markdown-preview" 
+                                 @ref="previewContainer">
+                                @if (_renderedHtmlMarkup != null)
+                                {
+                                    @_renderedHtmlMarkup
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-state">請選擇一個 Markdown 檔案以預覽內容</div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private Microsoft.AspNetCore.Components.ElementReference previewContainer;
+    private string? _lastRenderedHtml;
+    private MarkupString? _renderedHtmlMarkup;
+    
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        // 訂閱 ViewModel 的屬性變更通知
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        if (ViewModel.PreviewViewModel != null)
+        {
+            ViewModel.PreviewViewModel.PropertyChanged += OnPreviewViewModelPropertyChanged;
+        }
+    }
+    
+    private void UpdateRenderedHtml()
+    {
+        // 當 RenderedHtml 變更時，更新 MarkupString
+        if (ViewModel.PreviewViewModel != null && 
+            ViewModel.PreviewViewModel.RenderedHtml != _lastRenderedHtml)
+        {
+            _lastRenderedHtml = ViewModel.PreviewViewModel.RenderedHtml;
+            if (!string.IsNullOrEmpty(_lastRenderedHtml))
+            {
+                _renderedHtmlMarkup = new MarkupString(_lastRenderedHtml);
+            }
+            else
+            {
+                _renderedHtmlMarkup = null;
+            }
+        }
+    }
+    
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // 當 ViewModel 屬性變更時，更新 Blazor 組件
+        InvokeAsync(() =>
+        {
+            UpdateRenderedHtml();
+            StateHasChanged();
+        });
+    }
+    
+    private void OnPreviewViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // 當 PreviewViewModel 的 RenderedHtml 變更時，更新預覽
+        if (e.PropertyName == nameof(ViewModel.PreviewViewModel.RenderedHtml))
+        {
+            InvokeAsync(() =>
+            {
+                UpdateRenderedHtml();
+                StateHasChanged();
+            });
+        }
+        else
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    private void ToggleEditMode()
+    {
+        ViewModel.ToggleEditMode();
+    }
+    
+    private async Task SaveFile()
+    {
+        await ViewModel.SaveFileAsync();
+    }
+    
+    private void ToggleExportMenu()
+    {
+        ViewModel.ToggleExportMenu();
+    }
+    
+    private void CloseExportMenu()
+    {
+        ViewModel.CloseExportMenu();
+    }
+    
+    private void SetPageSizeA4() => ViewModel.SetPageSizeA4();
+    private void SetPageSizeLetter() => ViewModel.SetPageSizeLetter();
+    private void SetPageSizeLegal() => ViewModel.SetPageSizeLegal();
+    private void SetOrientationPortrait() => ViewModel.SetOrientationPortrait();
+    private void SetOrientationLandscape() => ViewModel.SetOrientationLandscape();
+    
+    private async Task OnExportFormatClick(ExportFormat format)
+    {
+        // 確保只有啟用的格式才能點擊
+        if (!format.IsEnabled)
+        {
+            return;
+        }
+        
+        // 關閉選單
+        ViewModel.ShowExportMenu = false;
+        
+        // 執行匯出（使用介面方法）
+        await ViewModel.ExportAsync(format);
+        
+        // 強制更新 UI
+        StateHasChanged();
+    }
+    
+    public void Dispose()
+    {
+        // 取消訂閱 ViewModel 的屬性變更通知
+        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        if (ViewModel.PreviewViewModel != null)
+        {
+            ViewModel.PreviewViewModel.PropertyChanged -= OnPreviewViewModelPropertyChanged;
+        }
+    }
+}
+

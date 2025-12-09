@@ -2,17 +2,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using MD_Viewer.ViewModels;
 
 namespace MD_Viewer.ViewModels;
 
 /// <summary>
 /// 編輯 ViewModel
 /// </summary>
-public partial class EditViewModel : ObservableObject, IDisposable
+public partial class EditViewModel : ObservableObject, IDisposable, IEditViewModel
 {
 	private readonly IMessenger _messenger;
 	private readonly ILogger<EditViewModel> _logger;
-	private PreviewViewModel? _previewViewModel;
+	private IPreviewViewModel? _previewViewModel;
 
 	private string _markdownContent = string.Empty;
 	private System.Threading.Timer? _debounceTimer;
@@ -29,7 +30,7 @@ public partial class EditViewModel : ObservableObject, IDisposable
 	/// <summary>
 	/// 設定預覽 ViewModel（用於即時同步）
 	/// </summary>
-	public PreviewViewModel? PreviewViewModel
+	public IPreviewViewModel? PreviewViewModel
 	{
 		get => _previewViewModel;
 		set => SetProperty(ref _previewViewModel, value);
@@ -90,7 +91,8 @@ public partial class EditViewModel : ObservableObject, IDisposable
 	{
 		try
 		{
-			PreviewViewModel?.UpdatePreviewCommand?.Execute(MarkdownContent);
+			// 使用介面方法更新預覽
+			_previewViewModel?.UpdatePreview(MarkdownContent);
 		}
 		catch (Exception ex)
 		{

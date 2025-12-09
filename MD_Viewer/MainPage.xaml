@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:MD_Viewer.Views"
              xmlns:converters="clr-namespace:MD_Viewer.Converters"
              xmlns:local="clr-namespace:MD_Viewer"
              xmlns:viewmodels="clr-namespace:MD_Viewer.ViewModels"
-             xmlns:models="clr-namespace:MD_Viewer.Models"
+             xmlns:models="clr-namespace:MD_Viewer.Models;assembly=MD_Viewer.Shared"
              x:Class="MD_Viewer.MainPage"
              x:DataType="viewmodels:MainViewModel">
-    
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter" />
@@ -21,226 +21,158 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 工具列區域 -->
-        <Grid Grid.Row="0" 
-              BackgroundColor="{StaticResource Primary}"
-              HeightRequest="50"
-              Padding="8,0">
-            <HorizontalStackLayout Spacing="12" 
-                                   VerticalOptions="Center"
-                                   HorizontalOptions="Start">
-                <!-- 應用程式標題 -->
-                <Label Text="MD Viewer"
-                       FontSize="18"
-                       FontAttributes="Bold"
-                       TextColor="White"
-                       VerticalOptions="Center"
-                       Margin="8,0" />
-
-                <!-- 編輯按鈕 -->
-                <Button Text="{Binding EditButtonText}"
+        <!-- Toolbar -->
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}" HeightRequest="50" Padding="8,0">
+            <!-- 左側：Logo 和按鈕 -->
+            <HorizontalStackLayout Spacing="12" VerticalOptions="Center" HorizontalOptions="Start">
+                <Label Text="MD Viewer" FontSize="18" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" Margin="8,0" />
+                
+                <!-- 編輯/預覽切換按鈕 -->
+                <Button Text="{Binding EditButtonText}" 
                         Command="{Binding ToggleEditModeCommand}"
                         BackgroundColor="Transparent"
                         TextColor="White"
-                        FontSize="14"
-                        Padding="12,8"
-                        CornerRadius="4" />
-
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="4"
+                        Padding="12,4"
+                        FontSize="14" />
+                
                 <!-- 儲存按鈕 -->
-                <Button Text="儲存"
+                <Button Text="儲存" 
                         Command="{Binding SaveFileCommand}"
                         IsEnabled="{Binding CanSave}"
                         BackgroundColor="Transparent"
                         TextColor="White"
-                        FontSize="14"
-                        Padding="12,8"
-                        CornerRadius="4" />
-
-                <!-- 儲存訊息顯示 -->
-                <Label Text="{Binding SaveMessage}"
-                       FontSize="12"
-                       TextColor="White"
-                       VerticalOptions="Center"
-                       Margin="8,0">
-                    <Label.Triggers>
-                        <!-- 無訊息時隱藏 -->
-                        <DataTrigger TargetType="Label" Binding="{Binding SaveMessage, TargetNullValue=''}" Value="">
-                            <Setter Property="IsVisible" Value="False" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                </Label>
-
-                <!-- 匯出按鈕 -->
-                <Button Text="匯出"
-                        Command="{Binding ToggleExportMenuCommand}"
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="4"
+                        Padding="12,4"
+                        FontSize="14" />
+                
+                <!-- 匯出 PDF 按鈕 -->
+                <Button Text="匯出 PDF" 
+                        Clicked="OnExportPdfClicked"
+                        IsEnabled="{Binding CanExport}"
                         BackgroundColor="Transparent"
                         TextColor="White"
-                        FontSize="14"
-                        Padding="12,8"
+                        BorderColor="White"
+                        BorderWidth="1"
                         CornerRadius="4"
-                        IsEnabled="{Binding CanExport}" />
-
-                <!-- 匯出載入狀態指示器 -->
-                <ActivityIndicator IsRunning="{Binding IsExporting}"
-                                   Color="White"
-                                   WidthRequest="20"
-                                   HeightRequest="20"
-                                   VerticalOptions="Center"
-                                   Margin="8,0">
-                    <ActivityIndicator.Triggers>
-                        <!-- 非匯出中時隱藏 -->
-                        <DataTrigger TargetType="ActivityIndicator" Binding="{Binding IsExporting}" Value="False">
-                            <Setter Property="IsVisible" Value="False" />
-                        </DataTrigger>
-                    </ActivityIndicator.Triggers>
-                </ActivityIndicator>
-
-                <!-- 匯出訊息顯示 -->
-                <Label Text="{Binding ExportMessage}"
-                       FontSize="12"
-                       TextColor="White"
-                       VerticalOptions="Center"
-                       Margin="8,0">
-                    <Label.Triggers>
-                        <!-- 無訊息時隱藏 -->
-                        <DataTrigger TargetType="Label" Binding="{Binding ExportMessage, TargetNullValue=''}" Value="">
-                            <Setter Property="IsVisible" Value="False" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                </Label>
+                        Padding="12,4"
+                        FontSize="14" />
+                
+                <!-- 匯出 HTML 按鈕 -->
+                <Button Text="匯出 HTML" 
+                        Clicked="OnExportHtmlClicked"
+                        IsEnabled="{Binding CanExport}"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="4"
+                        Padding="12,4"
+                        FontSize="14" />
             </HorizontalStackLayout>
-
+            
+            <!-- 右側：主題選擇和訊息 -->
+            <HorizontalStackLayout Spacing="12" VerticalOptions="Center" HorizontalOptions="End" Margin="0,0,16,0">
+                <!-- 訊息顯示 -->
+                <Label Text="{Binding SaveMessage}" TextColor="LightGreen" FontSize="12" VerticalOptions="Center" />
+                <Label Text="{Binding ExportMessage}" TextColor="LightGreen" FontSize="12" VerticalOptions="Center" />
+                <ActivityIndicator IsRunning="{Binding IsExporting}" Color="White" HeightRequest="20" WidthRequest="20" />
+                
+                <!-- 主題選擇 -->
+                <Label Text="主題:" TextColor="White" FontSize="14" VerticalOptions="Center" />
+                <Picker x:Name="ThemePicker"
+                        SelectedIndexChanged="OnThemeChanged"
+                        TextColor="White"
+                        TitleColor="White"
+                        BackgroundColor="#7B68EE"
+                        WidthRequest="140"
+                        HeightRequest="36"
+                        VerticalOptions="Center">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>淺色</x:String>
+                            <x:String>深色</x:String>
+                            <x:String>One Dark Pro</x:String>
+                            <x:String>Dracula</x:String>
+                            <x:String>Nord</x:String>
+                            <x:String>Monokai</x:String>
+                            <x:String>Solarized Dark</x:String>
+                            <x:String>Solarized Light</x:String>
+                            <x:String>GitHub Dark</x:String>
+                            <x:String>GitHub Light</x:String>
+                            <x:String>護眼綠</x:String>
+                            <x:String>暖色米黃</x:String>
+                            <x:String>高對比</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </HorizontalStackLayout>
         </Grid>
 
-        <!-- 遮罩（點擊關閉匯出選單） -->
-        <Grid Grid.RowSpan="2"
-              BackgroundColor="#80000000"
-              ZIndex="1"
-              IsVisible="{Binding ShowExportMenu}">
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding CloseExportMenuCommand}" />
-            </Grid.GestureRecognizers>
-        </Grid>
-
-        <!-- 匯出選單 Popup（放在最外層，確保顯示在最上方） -->
-        <Border Grid.RowSpan="2"
-                BackgroundColor="White"
-                Stroke="Gray"
-                StrokeThickness="1"
-                Padding="8"
-                WidthRequest="350"
-                MaximumWidthRequest="400"
-                HorizontalOptions="End"
-                VerticalOptions="Start"
-                Margin="0,60,8,0"
-                ZIndex="2"
-                IsVisible="{Binding ShowExportMenu}">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="4" />
-            </Border.StrokeShape>
-            <Border.Shadow>
-                <Shadow Brush="Black"
-                        Opacity="0.3"
-                        Radius="10"
-                        Offset="0,2" />
-            </Border.Shadow>
-            <VerticalStackLayout Spacing="8">
-                <!-- PDF 選項區 -->
-                <HorizontalStackLayout Spacing="8" Padding="4,0">
-                    <Label Text="PDF 選項：" FontAttributes="Bold" FontSize="13" />
-                    <Button Text="A4" Command="{Binding SetPageSizeA4Command}" FontSize="12" Padding="6,2" />
-                    <Button Text="Letter" Command="{Binding SetPageSizeLetterCommand}" FontSize="12" Padding="6,2" />
-                    <Button Text="Legal" Command="{Binding SetPageSizeLegalCommand}" FontSize="12" Padding="6,2" />
-                    <BoxView WidthRequest="8" />
-                    <Button Text="直向" Command="{Binding SetOrientationPortraitCommand}" FontSize="12" Padding="6,2" />
-                    <Button Text="橫向" Command="{Binding SetOrientationLandscapeCommand}" FontSize="12" Padding="6,2" />
-                </HorizontalStackLayout>
-                <HorizontalStackLayout Spacing="8" Padding="4,0">
-                    <Label Text="頁碼：" FontSize="13" />
-                    <Switch IsToggled="{Binding IncludePageNumbers}" />
-                    <Label Text="{Binding ExportPageSize}" FontSize="12" TextColor="Gray" />
-                    <Label Text="{Binding ExportOrientation}" FontSize="12" TextColor="Gray" />
-                </HorizontalStackLayout>
-
-                <!-- 格式清單 -->
-                <CollectionView ItemsSource="{Binding SupportedExportFormats}"
-                                SelectionMode="Single"
-                                BackgroundColor="Transparent"
-                                HeightRequest="200">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:ExportFormat">
-                            <Grid Padding="12,8"
-                                  BindingContext="{Binding .}">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnExportFormatTapped" />
-                                </Grid.GestureRecognizers>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                    <Label Text="{Binding Name}"
-                                           FontSize="14"
-                                           FontAttributes="Bold"
-                                           TextColor="{Binding IsEnabled, Converter={StaticResource BoolToTextColorConverter}}" />
-                                    <Label Text="{Binding Description}"
-                                           FontSize="12"
-                                           TextColor="Gray" />
-                                </VerticalStackLayout>
-                                <Label Grid.Column="1"
-                                       Text="✓"
-                                       FontSize="16"
-                                       TextColor="Green"
-                                       IsVisible="{Binding IsEnabled}"
-                                       VerticalOptions="Center"
-                                       Margin="8,0,0,0" />
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
-        </Border>
-
-        <!-- 主要內容區域 -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <!-- 檔案樹區域：固定寬度 300px，但支援響應式調整 -->
                 <ColumnDefinition Width="300" />
-                <!-- 預覽/編輯區域：彈性寬度，自動填滿剩餘空間 -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- 檔案樹區域（左側） -->
+            <!-- FileTreeView -->
             <views:FileTreeView Grid.Column="0" 
-                                 x:Name="FileTreeViewControl" />
+                               x:Name="FileTreeViewControl" 
+                               BindingContext="{Binding FileTreeViewModel}" />
 
-            <!-- 預覽模式：只顯示預覽區 -->
-            <views:PreviewView Grid.Column="1" 
-                                x:Name="PreviewViewControl">
-                <views:PreviewView.Triggers>
-                    <DataTrigger TargetType="views:PreviewView" Binding="{Binding IsEditMode}" Value="True">
-                        <Setter Property="IsVisible" Value="False" />
-                    </DataTrigger>
-                </views:PreviewView.Triggers>
-            </views:PreviewView>
-
-            <!-- 編輯模式：雙欄佈局（編輯區 + 預覽區） -->
-            <Grid Grid.Column="1"
-                  IsVisible="{Binding IsEditMode}">
-                <Grid.ColumnDefinitions>
-                    <!-- 編輯區：50% 寬度 -->
-                    <ColumnDefinition Width="*" />
-                    <!-- 預覽區：50% 寬度 -->
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!-- 編輯區（左側） -->
-                <views:EditView Grid.Column="0"
-                                x:Name="EditViewControl" />
-
-                <!-- 預覽區（右側） -->
-                <views:PreviewView Grid.Column="1"
-                                    x:Name="EditModePreviewViewControl" />
+            <!-- 右側內容區域 -->
+            <Grid Grid.Column="1" x:Name="PreviewContainer" BackgroundColor="White">
+                
+                <!-- 空狀態提示（無檔案選擇時） -->
+                <Label x:Name="EmptyStateLabel"
+                       Text="請選擇一個 Markdown 檔案"
+                       TextColor="#666666"
+                       FontSize="18"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       IsVisible="{Binding PreviewViewModel.ShowEmptyState}" />
+                
+                <!-- 載入中 -->
+                <ActivityIndicator IsRunning="{Binding PreviewViewModel.IsLoading}"
+                                   IsVisible="{Binding PreviewViewModel.IsLoading}"
+                                   Color="#512BD4"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                
+                <!-- 預覽模式：只顯示 WebView -->
+                <WebView x:Name="PreviewWebView"
+                         IsVisible="{Binding PreviewViewModel.ShowWebView}" />
+                
+                <!-- 編輯模式：左右分割（編輯器 + 即時預覽） -->
+                <Grid IsVisible="{Binding IsEditMode}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- 左側：Markdown 編輯器 -->
+                    <Grid Grid.Column="0" BackgroundColor="#1e1e1e">
+                        <Editor x:Name="MarkdownEditor"
+                                Text="{Binding EditViewModel.MarkdownContent, Mode=TwoWay}"
+                                TextColor="#d4d4d4"
+                                BackgroundColor="#1e1e1e"
+                                FontFamily="Consolas"
+                                FontSize="14"
+                                Placeholder="在此輸入 Markdown 內容..."
+                                PlaceholderColor="#666666"
+                                AutoSize="TextChanges"
+                                IsSpellCheckEnabled="False" />
+                    </Grid>
+                    
+                    <!-- 右側：即時預覽 -->
+                    <Grid Grid.Column="1" BackgroundColor="White">
+                        <WebView x:Name="EditPreviewWebView" />
+                    </Grid>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>
