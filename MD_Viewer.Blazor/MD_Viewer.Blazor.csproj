@@ -8,6 +8,13 @@
     <RazorLangVersion>Latest</RazorLangVersion>
   </PropertyGroup>
 
+  <!-- Release ³Ì¨Î¤Æ -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <SupportedPlatform Include="browser" />
     <ProjectReference Include="..\MD_Viewer.Shared\MD_Viewer.Shared.csproj" />
