@@ -30,6 +30,7 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	private string? _saveMessage;
 	private bool _isExporting;
 	private string? _exportMessage;
+	private string? _formatMessage;
 	private bool _showExportMenu;
 
 	// PDF 匯出選項
@@ -208,6 +209,15 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	{
 		get => _exportMessage;
 		set => SetProperty(ref _exportMessage, value);
+	}
+
+	/// <summary>
+	/// 格式化訊息
+	/// </summary>
+	public string? FormatMessage
+	{
+		get => _formatMessage;
+		set => SetProperty(ref _formatMessage, value);
 	}
 
 	/// <summary>

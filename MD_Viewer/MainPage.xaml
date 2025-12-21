@@ -24,7 +24,7 @@
         <!-- Toolbar -->
         <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}" HeightRequest="50" Padding="8,0">
             <!-- 左側：Logo 和按鈕 -->
-            <HorizontalStackLayout Spacing="12" VerticalOptions="Center" HorizontalOptions="Start">
+            <HorizontalStackLayout Spacing="8" VerticalOptions="Center" HorizontalOptions="Start">
                 <Label Text="MD Viewer" FontSize="18" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" Margin="8,0" />
                 
                 <!-- 編輯/預覽切換按鈕 -->
@@ -35,8 +35,8 @@
                         BorderColor="White"
                         BorderWidth="1"
                         CornerRadius="4"
-                        Padding="12,4"
-                        FontSize="14" />
+                        Padding="10,4"
+                        FontSize="13" />
                 
                 <!-- 儲存按鈕 -->
                 <Button Text="儲存" 
@@ -47,8 +47,23 @@
                         BorderColor="White"
                         BorderWidth="1"
                         CornerRadius="4"
-                        Padding="12,4"
-                        FontSize="14" />
+                        Padding="10,4"
+                        FontSize="13" />
+
+                <!-- 格式化按鈕 -->
+                <Button Text="格式化" 
+                        Clicked="OnFormatClicked"
+                        IsEnabled="{Binding IsEditMode}"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="4"
+                        Padding="10,4"
+                        FontSize="13" />
+                
+                <!-- 分隔線 -->
+                <BoxView WidthRequest="1" HeightRequest="24" BackgroundColor="#FFFFFF50" VerticalOptions="Center" />
                 
                 <!-- 匯出 PDF 按鈕 -->
                 <Button Text="匯出 PDF" 
@@ -59,8 +74,8 @@
                         BorderColor="White"
                         BorderWidth="1"
                         CornerRadius="4"
-                        Padding="12,4"
-                        FontSize="14" />
+                        Padding="10,4"
+                        FontSize="13" />
                 
                 <!-- 匯出 HTML 按鈕 -->
                 <Button Text="匯出 HTML" 
@@ -71,8 +86,8 @@
                         BorderColor="White"
                         BorderWidth="1"
                         CornerRadius="4"
-                        Padding="12,4"
-                        FontSize="14" />
+                        Padding="10,4"
+                        FontSize="13" />
             </HorizontalStackLayout>
             
             <!-- 右側：主題選擇和訊息 -->
@@ -80,6 +95,7 @@
                 <!-- 訊息顯示 -->
                 <Label Text="{Binding SaveMessage}" TextColor="LightGreen" FontSize="12" VerticalOptions="Center" />
                 <Label Text="{Binding ExportMessage}" TextColor="LightGreen" FontSize="12" VerticalOptions="Center" />
+                <Label Text="{Binding FormatMessage}" TextColor="LightGreen" FontSize="12" VerticalOptions="Center" />
                 <ActivityIndicator IsRunning="{Binding IsExporting}" Color="White" HeightRequest="20" WidthRequest="20" />
                 
                 <!-- 主題選擇 -->

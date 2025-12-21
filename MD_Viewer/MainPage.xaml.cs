@@ -1,4 +1,5 @@
 using MD_Viewer.Models;
+using MD_Viewer.Services.Interfaces;
 using MD_Viewer.ViewModels;
 using System.ComponentModel;
 
@@ -7,6 +8,7 @@ namespace MD_Viewer;
 public partial class MainPage : ContentPage
 {
 	private readonly MainViewModel _viewModel;
+	private readonly IMarkdownService _markdownService;
 	private string _currentTheme = "淺色";
 
 	// 主題配色定義 - 參考 VS Theme Pack 風格
@@ -34,11 +36,12 @@ public partial class MainPage : ContentPage
 		["高對比"] = new ThemeColors("#000000", "#ffffff", "#ffff00", "#1a1a1a", "HighContrast"),
 	};
 
-	public MainPage(MainViewModel viewModel)
+	public MainPage(MainViewModel viewModel, IMarkdownService markdownService)
 	{
 		InitializeComponent();
 		BindingContext = viewModel;
 		_viewModel = viewModel;
+		_markdownService = markdownService;
 		
 		// 設定預設主題
 		ThemePicker.SelectedIndex = 0;
@@ -80,6 +83,46 @@ public partial class MainPage : ContentPage
 		if (htmlFormat != null)
 		{
 			await _viewModel.ExportAsync(htmlFormat);
+		}
+	}
+
+	/// <summary>
+	/// 格式化按鈕點擊
+	/// </summary>
+	private void OnFormatClicked(object? sender, EventArgs e)
+	{
+		if (_viewModel.EditViewModel == null || !_viewModel.IsEditMode)
+			return;
+
+		try
+		{
+			var currentContent = _viewModel.EditViewModel.MarkdownContent;
+			if (string.IsNullOrWhiteSpace(currentContent))
+			{
+				_viewModel.FormatMessage = "沒有可格式化的內容";
+				return;
+			}
+
+			// 格式化 Markdown
+			var formattedContent = _markdownService.FormatMarkdown(currentContent);
+			
+			// 更新編輯器內容
+			_viewModel.EditViewModel.LoadContent(formattedContent);
+			
+			_viewModel.FormatMessage = "格式化完成";
+			
+			// 3 秒後清除訊息
+			_ = Task.Delay(3000).ContinueWith(_ =>
+			{
+				MainThread.BeginInvokeOnMainThread(() =>
+				{
+					_viewModel.FormatMessage = null;
+				});
+			});
+		}
+		catch (Exception ex)
+		{
+			_viewModel.FormatMessage = $"格式化失敗: {ex.Message}";
 		}
 	}
 
@@ -228,13 +271,18 @@ public partial class MainPage : ContentPage
 			pre code {{
 				color: {codeTextColor} !important;
 			}}
+			table {{
+				font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+			}}
 			table th {{
 				background-color: {theme.CodeBg} !important;
 				color: {theme.Text} !important;
 				border-color: {codeBorderColor} !important;
+				white-space: nowrap !important;
 			}}
 			table td {{
 				border-color: {codeBorderColor} !important;
+				white-space: nowrap !important;
 			}}
 			table tr:nth-child(2n) {{
 				background-color: {theme.CodeBg} !important;
