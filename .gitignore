@@ -133,3 +133,10 @@ publish/
 **/node_modules/
 **/package-lock.json
 
+# Release artifacts (uploaded to GitHub Releases separately)
+*.zip
+release-notes.md
+publish/
+release/
+installer/
+
