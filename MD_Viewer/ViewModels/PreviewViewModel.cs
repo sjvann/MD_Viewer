@@ -171,22 +171,25 @@ public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
     </script>" : "";
 
 		// 包裝為完整的 HTML 文件，包含 CSS 樣式
+		// 使用等寬字型 (Monospace) 作為預設，確保英文和中日韓文字對齊
 		return $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
     <style>
-        /* 基本 Markdown 樣式 */
+        /* 基本 Markdown 樣式 - 使用等寬字型 */
         body {{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Source Code Pro', 'Courier New', monospace, 'Microsoft YaHei', 'PingFang SC', sans-serif;
             padding: 20px;
-            line-height: 1.6;
+            line-height: 1.8;
             color: #333;
             max-width: 100%;
             word-wrap: break-word;
+            font-size: 14px;
         }}
         h1, h2, h3, h4, h5, h6 {{
+            font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
             margin-top: 24px;
             margin-bottom: 16px;
             font-weight: 600;
@@ -220,8 +223,8 @@ public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
             background-color: rgba(27, 31, 35, 0.05);
             padding: 0.2em 0.4em;
             border-radius: 3px;
-            font-size: 85%;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 100%;
+            font-family: inherit;
         }}
         pre {{
             background-color: #f6f8fa;
@@ -239,11 +242,12 @@ public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
             border-collapse: collapse;
             margin-top: 0;
             margin-bottom: 16px;
-            width: 100%;
+            width: auto;
         }}
         table th, table td {{
             border: 1px solid #dfe2e5;
             padding: 6px 13px;
+            white-space: pre;
         }}
         table th {{
             background-color: #f6f8fa;
