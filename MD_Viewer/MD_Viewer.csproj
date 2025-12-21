@@ -33,26 +33,18 @@
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     
-    <!-- Windows 封裝設定 -->
-    <!-- 使用 None = 不打包為 MSIX（產生獨立 EXE）-->
-    <!-- 使用 MSIX = 打包為 MSIX 安裝包（需要憑證簽章）-->
+    <!-- Windows 設定 -->
     <WindowsPackageType>None</WindowsPackageType>
-    
-    <!-- 啟用發布設定 -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- Release 最佳化設定 -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <!-- 單一執行檔 -->
-    <PublishSingleFile>true</PublishSingleFile>
+    <!-- 自包含部署 -->
     <SelfContained>true</SelfContained>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     
     <!-- 效能最佳化 -->
     <PublishReadyToRun>true</PublishReadyToRun>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <PublishTrimmed>false</PublishTrimmed>
     
     <!-- 移除偵錯資訊 -->
     <DebugType>none</DebugType>
@@ -60,9 +52,6 @@
     
     <!-- 最佳化程式碼 -->
     <Optimize>true</Optimize>
-    
-    <!-- 移除不必要的全球化資源（減少檔案大小） -->
-    <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
