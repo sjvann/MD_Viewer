@@ -52,7 +52,36 @@
     
     <!-- 最佳化程式碼 -->
     <Optimize>true</Optimize>
+    
+    <!-- 
+    程式碼簽章設定（選用）
+    取消註解並填入正確的值以啟用自動簽章
+    
+    <SignTool>signtool</SignTool>
+    <SignToolPath>C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64</SignToolPath>
+    <SignToolTimestampServerUrl>http://timestamp.digicert.com</SignToolTimestampServerUrl>
+    
+    選項 1: 使用憑證檔案 (.pfx)
+    <SignToolCertificateFile>path\to\certificate.pfx</SignToolCertificateFile>
+    <SignToolCertificatePassword>YOUR_PASSWORD</SignToolCertificatePassword>
+    
+    選項 2: 使用憑證指紋（從憑證存放區）
+    <SignToolCertificateThumbprint>YOUR_CERTIFICATE_THUMBPRINT</SignToolCertificateThumbprint>
+    -->
   </PropertyGroup>
+  
+  <!-- 
+  自動簽章目標（選用）
+  取消註解以在發布後自動簽章執行檔
+  
+  <Target Name="SignOutput" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release' AND '$(SignToolCertificateFile)' != ''">
+    <PropertyGroup>
+      <SignToolExe>$(SignToolPath)\signtool.exe</SignToolExe>
+      <SignCommand>"$(SignToolExe)" sign /f "$(SignToolCertificateFile)" /p "$(SignToolCertificatePassword)" /t "$(SignToolTimestampServerUrl)" /v "$(PublishDir)\MD_Viewer.exe"</SignCommand>
+    </PropertyGroup>
+    <Exec Command="$(SignCommand)" ContinueOnError="false" />
+  </Target>
+  -->
 
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#667eea" />

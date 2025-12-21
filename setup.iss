@@ -41,7 +41,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 ; 其他設定
 WizardStyle=modern
 DisableProgramGroupPage=yes
-ShowLanguageDialog=auto
+ShowLanguageDialog=no
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 ; 支援的架構
@@ -55,13 +55,11 @@ VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 
 [Languages]
-Name: "tchinese"; MessagesFile: "compiler:Languages\ChineseTraditional.isl"
+; 只使用預設的語言檔
 Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "schinese"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
-Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+Name: "desktopicon"; Description: "建立桌面捷徑"; GroupDescription: "其他捷徑:"
 Name: "fileassoc"; Description: "將 .md 檔案與 MD Viewer 關聯"; GroupDescription: "檔案關聯:"
 
 [Files]
@@ -75,14 +73,14 @@ Name: "{app}\runtimes"; Flags: uninsalwaysuninstall
 [Icons]
 ; 開始選單
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Comment: "Markdown 文件檢視器"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
 
 ; 桌面捷徑
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Comment: "Markdown 文件檢視器"
 
 [Run]
 ; 安裝完成後詢問是否啟動程式
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "啟動 {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; 解除安裝時刪除使用者資料（可選）

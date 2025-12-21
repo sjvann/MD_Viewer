@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.0.0.0" name="MD_Viewer.WinUI.app"/>
+  <assemblyIdentity 
+    version="1.0.0.0" 
+    name="MD_Viewer.WinUI.app"
+    processorArchitecture="*"
+    type="win32" />
+
+  <description>MD Viewer - Markdown 檔案檢視器</description>
 
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
@@ -12,4 +18,14 @@
       <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
     </windowsSettings>
   </application>
+
+  <!-- 信任資訊：標示此應用程式為受信任的應用程式 -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!-- 請求最低權限，避免被誤判為惡意軟體 -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
 </assembly>
