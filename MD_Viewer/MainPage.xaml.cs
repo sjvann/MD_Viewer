@@ -91,8 +91,27 @@ public partial class MainPage : ContentPage
 	/// </summary>
 	private void OnFormatClicked(object? sender, EventArgs e)
 	{
-		if (_viewModel.EditViewModel == null || !_viewModel.IsEditMode)
+		// 如果不是編輯模式，先切換到編輯模式
+		if (!_viewModel.IsEditMode)
+		{
+			// 檢查是否有內容可以格式化
+			if (string.IsNullOrWhiteSpace(_viewModel.CurrentFileContent))
+			{
+				_viewModel.FormatMessage = "請先開啟一個 Markdown 檔案";
+				ClearFormatMessageAfterDelay();
+				return;
+			}
+			
+			// 切換到編輯模式
+			_viewModel.ToggleEditMode();
+		}
+
+		if (_viewModel.EditViewModel == null)
+		{
+			_viewModel.FormatMessage = "編輯器未初始化";
+			ClearFormatMessageAfterDelay();
 			return;
+		}
 
 		try
 		{
@@ -100,30 +119,46 @@ public partial class MainPage : ContentPage
 			if (string.IsNullOrWhiteSpace(currentContent))
 			{
 				_viewModel.FormatMessage = "沒有可格式化的內容";
+				ClearFormatMessageAfterDelay();
 				return;
 			}
 
 			// 格式化 Markdown
 			var formattedContent = _markdownService.FormatMarkdown(currentContent);
 			
+			// 檢查是否有變化
+			if (formattedContent == currentContent)
+			{
+				_viewModel.FormatMessage = "內容已經是最佳格式";
+				ClearFormatMessageAfterDelay();
+				return;
+			}
+			
 			// 更新編輯器內容
 			_viewModel.EditViewModel.LoadContent(formattedContent);
 			
-			_viewModel.FormatMessage = "格式化完成";
-			
-			// 3 秒後清除訊息
-			_ = Task.Delay(3000).ContinueWith(_ =>
-			{
-				MainThread.BeginInvokeOnMainThread(() =>
-				{
-					_viewModel.FormatMessage = null;
-				});
-			});
+			_viewModel.FormatMessage = "✓ 格式化完成";
+			ClearFormatMessageAfterDelay();
 		}
 		catch (Exception ex)
 		{
 			_viewModel.FormatMessage = $"格式化失敗: {ex.Message}";
+			ClearFormatMessageAfterDelay();
 		}
+	}
+
+	/// <summary>
+	/// 3 秒後清除格式化訊息
+	/// </summary>
+	private void ClearFormatMessageAfterDelay()
+	{
+		_ = Task.Delay(3000).ContinueWith(_ =>
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				_viewModel.FormatMessage = null;
+			});
+		});
 	}
 
 	private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

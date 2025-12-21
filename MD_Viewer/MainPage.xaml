@@ -50,10 +50,10 @@
                         Padding="10,4"
                         FontSize="13" />
 
-                <!-- 格式化按鈕 -->
+                <!-- 格式化按鈕（有檔案內容時可用） -->
                 <Button Text="格式化" 
                         Clicked="OnFormatClicked"
-                        IsEnabled="{Binding IsEditMode}"
+                        IsEnabled="{Binding CanExport}"
                         BackgroundColor="Transparent"
                         TextColor="White"
                         BorderColor="White"

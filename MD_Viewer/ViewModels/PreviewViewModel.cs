@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using MD_Viewer.Services.Interfaces;
 using MD_Viewer.ViewModels;
+using System.Text.RegularExpressions;
 
 namespace MD_Viewer.ViewModels;
 
@@ -105,6 +106,10 @@ public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
 			}
 
 			var html = _markdownService.RenderToHtml(markdown);
+			
+			// 處理 Mermaid 圖表
+			html = ProcessMermaidBlocks(html);
+			
 			RenderedHtml = WrapHtmlContent(html);
 		}
 		catch (Exception ex)
@@ -120,12 +125,50 @@ public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
 	}
 
 	/// <summary>
-	/// 包裝 HTML 內容為完整的 HTML 文件
+	/// 處理 Mermaid 程式碼區塊，轉換為 Mermaid 可渲染的 div
+	/// </summary>
+	private string ProcessMermaidBlocks(string html)
+	{
+		// 將 <pre><code class="language-mermaid">...</code></pre> 
+		// 轉換為 <div class="mermaid">...</div>
+		var pattern = @"<pre><code class=""language-mermaid"">([\s\S]*?)</code></pre>";
+		return Regex.Replace(html, pattern, match =>
+		{
+			var mermaidCode = match.Groups[1].Value;
+			// 解碼 HTML 實體
+			mermaidCode = System.Net.WebUtility.HtmlDecode(mermaidCode);
+			return $"<div class=\"mermaid\">{mermaidCode}</div>";
+		}, RegexOptions.IgnoreCase);
+	}
+
+	/// <summary>
+	/// 包裝 HTML 內容為完整的 HTML 文件（含 Mermaid 支援）
 	/// </summary>
 	private string WrapHtmlContent(string content)
 	{
 		if (string.IsNullOrEmpty(content))
 			return string.Empty;
+
+		// 檢查是否包含 Mermaid 圖表
+		bool hasMermaid = content.Contains("class=\"mermaid\"", StringComparison.OrdinalIgnoreCase);
+
+		// Mermaid 腳本（僅在需要時載入）
+		var mermaidScript = hasMermaid ? @"
+    <!-- Mermaid.js for diagram rendering -->
+    <script src=""https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.initialize({ 
+                startOnLoad: true,
+                theme: 'default',
+                securityLevel: 'loose',
+                flowchart: {
+                    useMaxWidth: true,
+                    htmlLabels: true
+                }
+            });
+        });
+    </script>" : "";
 
 		// 包裝為完整的 HTML 文件，包含 CSS 樣式
 		return $@"<!DOCTYPE html>
@@ -227,23 +270,25 @@ public partial class PreviewViewModel : ObservableObject, IPreviewViewModel
             background-color: #e1e4e8;
             border: 0;
         }}
-        /* Markdig 語法高亮擴充說明：
-         * Markdig 的 UseSyntaxHighlighting() 擴充會為程式碼區塊生成帶有語言類別的 HTML，
-         * 例如：pre 標籤內包含 code 標籤，並帶有 language-csharp 類別
-         * 如需完整的語法高亮樣式，需要額外載入 highlight.js 的 CSS 檔案。
-         * 目前僅提供基本的程式碼區塊樣式。
-         */
-        /* Markdig 數學公式擴充說明：
-         * Markdig 的 UseMathematics() 擴充會將數學公式轉換為 HTML，
-         * 例如：span 或 div 標籤，並帶有 math 類別
-         * 如需完整的數學公式渲染，需要額外載入 KaTeX 的 CSS 和 JavaScript 檔案。
-         * 目前僅提供基本的數學公式容器樣式。
-         */
+        /* 數學公式樣式 */
         .math {{
             font-family: 'Times New Roman', serif;
             font-style: italic;
         }}
+        /* Mermaid 圖表樣式 */
+        .mermaid {{
+            text-align: center;
+            margin: 16px 0;
+            padding: 16px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }}
+        .mermaid svg {{
+            max-width: 100%;
+            height: auto;
+        }}
     </style>
+    {mermaidScript}
 </head>
 <body>
     {content}
