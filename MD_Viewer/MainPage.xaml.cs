@@ -1,5 +1,4 @@
 using MD_Viewer.Models;
-using MD_Viewer.Services.Interfaces;
 using MD_Viewer.ViewModels;
 using System.ComponentModel;
 
@@ -8,7 +7,6 @@ namespace MD_Viewer;
 public partial class MainPage : ContentPage
 {
 	private readonly MainViewModel _viewModel;
-	private readonly IMarkdownService _markdownService;
 	private string _currentTheme = "淺色";
 
 	// 主題配色定義 - 參考 VS Theme Pack 風格
@@ -36,12 +34,11 @@ public partial class MainPage : ContentPage
 		["高對比"] = new ThemeColors("#000000", "#ffffff", "#ffff00", "#1a1a1a", "HighContrast"),
 	};
 
-	public MainPage(MainViewModel viewModel, IMarkdownService markdownService)
+	public MainPage(MainViewModel viewModel)
 	{
 		InitializeComponent();
 		BindingContext = viewModel;
 		_viewModel = viewModel;
-		_markdownService = markdownService;
 		
 		// 設定預設主題
 		ThemePicker.SelectedIndex = 0;
@@ -84,81 +81,6 @@ public partial class MainPage : ContentPage
 		{
 			await _viewModel.ExportAsync(htmlFormat);
 		}
-	}
-
-	/// <summary>
-	/// 格式化按鈕點擊
-	/// </summary>
-	private void OnFormatClicked(object? sender, EventArgs e)
-	{
-		// 如果不是編輯模式，先切換到編輯模式
-		if (!_viewModel.IsEditMode)
-		{
-			// 檢查是否有內容可以格式化
-			if (string.IsNullOrWhiteSpace(_viewModel.CurrentFileContent))
-			{
-				_viewModel.FormatMessage = "請先開啟一個 Markdown 檔案";
-				ClearFormatMessageAfterDelay();
-				return;
-			}
-			
-			// 切換到編輯模式
-			_viewModel.ToggleEditMode();
-		}
-
-		if (_viewModel.EditViewModel == null)
-		{
-			_viewModel.FormatMessage = "編輯器未初始化";
-			ClearFormatMessageAfterDelay();
-			return;
-		}
-
-		try
-		{
-			var currentContent = _viewModel.EditViewModel.MarkdownContent;
-			if (string.IsNullOrWhiteSpace(currentContent))
-			{
-				_viewModel.FormatMessage = "沒有可格式化的內容";
-				ClearFormatMessageAfterDelay();
-				return;
-			}
-
-			// 格式化 Markdown
-			var formattedContent = _markdownService.FormatMarkdown(currentContent);
-			
-			// 檢查是否有變化
-			if (formattedContent == currentContent)
-			{
-				_viewModel.FormatMessage = "內容已經是最佳格式";
-				ClearFormatMessageAfterDelay();
-				return;
-			}
-			
-			// 更新編輯器內容
-			_viewModel.EditViewModel.LoadContent(formattedContent);
-			
-			_viewModel.FormatMessage = "✓ 格式化完成";
-			ClearFormatMessageAfterDelay();
-		}
-		catch (Exception ex)
-		{
-			_viewModel.FormatMessage = $"格式化失敗: {ex.Message}";
-			ClearFormatMessageAfterDelay();
-		}
-	}
-
-	/// <summary>
-	/// 3 秒後清除格式化訊息
-	/// </summary>
-	private void ClearFormatMessageAfterDelay()
-	{
-		_ = Task.Delay(3000).ContinueWith(_ =>
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				_viewModel.FormatMessage = null;
-			});
-		});
 	}
 
 	private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
