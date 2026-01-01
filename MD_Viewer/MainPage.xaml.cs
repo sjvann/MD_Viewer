@@ -1,6 +1,7 @@
 using MD_Viewer.Models;
 using MD_Viewer.ViewModels;
 using System.ComponentModel;
+using System.Linq;
 
 namespace MD_Viewer;
 
@@ -62,26 +63,47 @@ public partial class MainPage : ContentPage
 	/// <summary>
 	/// 匯出 PDF 按鈕點擊
 	/// </summary>
-	private async void OnExportPdfClicked(object? sender, EventArgs e)
-	{
-		var pdfFormat = _viewModel.SupportedExportFormats.FirstOrDefault(f => f.Extension == ".pdf");
-		if (pdfFormat != null)
+		private async void OnExportPdfClicked(object? sender, EventArgs e)
 		{
-			await _viewModel.ExportAsync(pdfFormat);
+			var pdfFormat = _viewModel.SupportedExportFormats.FirstOrDefault(f => f.Extension == ".pdf");
+			if (pdfFormat != null)
+			{
+				await _viewModel.ExportAsync(pdfFormat);
+			}
 		}
-	}
+	
+		/// <summary>
+		/// 匯出 HTML 按鈕點擊
+		/// </summary>
+		private async void OnExportHtmlClicked(object? sender, EventArgs e)
+		{
+			var htmlFormat = _viewModel.SupportedExportFormats.FirstOrDefault(f => f.Extension == ".html");
+			if (htmlFormat != null)
+			{
+				await _viewModel.ExportAsync(htmlFormat);
+			}
+		}
 
-	/// <summary>
-	/// 匯出 HTML 按鈕點擊
-	/// </summary>
-	private async void OnExportHtmlClicked(object? sender, EventArgs e)
-	{
-		var htmlFormat = _viewModel.SupportedExportFormats.FirstOrDefault(f => f.Extension == ".html");
-		if (htmlFormat != null)
-		{
-			await _viewModel.ExportAsync(htmlFormat);
-		}
-	}
+			/// <summary>
+			/// 通用匯出按鈕點擊：顯示可用格式清單
+			/// </summary>
+			private async void OnExportClicked(object? sender, EventArgs e)
+			{
+				if (!_viewModel.SupportedExportFormats.Any())
+					return;
+			
+				const string cancel = "取消";
+				var options = _viewModel.SupportedExportFormats.Select(f => f.Name).ToArray();
+				var selection = await DisplayActionSheetAsync("選擇匯出格式", cancel, null, options);
+				if (string.IsNullOrEmpty(selection) || selection == cancel)
+					return;
+			
+				var format = _viewModel.SupportedExportFormats.FirstOrDefault(f => f.Name == selection);
+				if (format != null)
+				{
+					await _viewModel.ExportAsync(format);
+				}
+			}
 
 	private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
@@ -163,6 +185,7 @@ public partial class MainPage : ContentPage
 				UpdateEditPreviewWebView();
 			}
 		}
+		
 	}
 
 	private void OnPreviewViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -308,22 +331,36 @@ public partial class MainPage : ContentPage
 		}
 	}
 
-	protected override void OnDisappearing()
-	{
-		base.OnDisappearing();
-		
-		if (_viewModel.PreviewViewModel != null)
+		protected override async void OnDisappearing()
 		{
-			_viewModel.PreviewViewModel.PropertyChanged -= OnPreviewViewModelPropertyChanged;
+			// 通用「離開前」檢查：若有未儲存變更，詢問是否要儲存
+				if (_viewModel.HasUnsavedChanges)
+				{
+					var save = await DisplayAlertAsync(
+						"檔案尚未儲存",
+						"目前檔案有尚未儲存的變更，是否在離開前先儲存？",
+						"是",
+						"否");
+					if (save)
+					{
+						await _viewModel.SaveFileAsync();
+					}
+				}
+			
+			base.OnDisappearing();
+			
+			if (_viewModel.PreviewViewModel != null)
+			{
+				_viewModel.PreviewViewModel.PropertyChanged -= OnPreviewViewModelPropertyChanged;
+			}
+			
+			if (_viewModel.EditViewModel != null)
+			{
+				_viewModel.EditViewModel.PropertyChanged -= OnEditViewModelPropertyChanged;
+			}
+			
+			_viewModel.PropertyChanged -= OnMainViewModelPropertyChanged;
 		}
-		
-		if (_viewModel.EditViewModel != null)
-		{
-			_viewModel.EditViewModel.PropertyChanged -= OnEditViewModelPropertyChanged;
-		}
-		
-		_viewModel.PropertyChanged -= OnMainViewModelPropertyChanged;
-	}
 
 	private async void OnExportFormatTapped(object? sender, TappedEventArgs e)
 	{

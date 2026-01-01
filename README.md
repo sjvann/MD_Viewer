@@ -1,216 +1,97 @@
 # MD Viewer
 
-<p align="center">
-  <img src="MD_Viewer/Resources/AppIcon/appicon.svg" width="128" height="128" alt="MD Viewer Logo">
-</p>
+ä¸€å€‹ä½¿ç”¨ .NET MAUI èˆ‡ Blazor WebView æ‰“é€ çš„è·¨å¹³å° Markdown æª¢è¦– / ç·¨è¼¯å·¥å…·ï¼Œç›®å‰å„ªå…ˆæ”¯æ´ Windows æ¡Œé¢ç’°å¢ƒã€‚
 
-<p align="center">
-  <strong>¤@´Ú¸ó¥­¥xªº Markdown ÀËµø¾¹»P½s¿è¾¹</strong>
-</p>
+> å°ˆæ³¨æ–¼ã€Œå¥½è®€ã€å¥½å¯«ã€å¥½åŒ¯å‡ºã€çš„ Markdown é«”é©—ã€‚
 
-<p align="center">
-  <a href="#¥\¯à¯S¦â">¥\¯à¯S¦â</a> ?
-  <a href="#¤U¸ü¦w¸Ë">¤U¸ü¦w¸Ë</a> ?
-  <a href="#¨Ï¥Î»¡©ú">¨Ï¥Î»¡©ú</a> ?
-  <a href="#¶}µo«ü«n">¶}µo«ü«n</a> ?
-  <a href="#±ÂÅv±ø´Ú">±ÂÅv±ø´Ú</a>
-</p>
+## åŠŸèƒ½ç‰¹è‰²
 
----
+- **èˆ’é©çš„ Markdown é–±è®€é«”é©—**ï¼šæ”¯æ´å¤šæ•¸å¸¸ç”¨èªæ³•ï¼ˆæ¨™é¡Œã€è¡¨æ ¼ã€ç¨‹å¼ç¢¼å€å¡Šã€å¾…è¾¦æ¸…å–®ç­‰ï¼‰ï¼Œä½¿ç”¨ Markdig è§£æä¸¦æ­é… Blazor WebView å‘ˆç¾ã€‚
+- **ç·¨è¼¯ + å³æ™‚é è¦½**ï¼šåœ¨åŒä¸€å€‹è¦–çª—ä¸­åˆ‡æ›ã€Œé è¦½æ¨¡å¼ã€èˆ‡ã€Œç·¨è¼¯æ¨¡å¼ã€ï¼Œç·¨è¼¯æ™‚å¯ç«‹å³çœ‹åˆ°æ›´æ–°å¾Œçš„æ¸²æŸ“çµæœã€‚
+- **å¤šç¨®ä¸»é¡Œ**ï¼šå…§å»ºå¤šæ¬¾äº®è‰² / æš—è‰²ä¸»é¡Œï¼ŒåŒ…å«é¡ä¼¼ One Dark Proã€Draculaã€Nordã€Solarizedã€GitHub Dark/Light ç­‰å¸¸è¦‹é¢¨æ ¼ã€‚
+- **æª”æ¡ˆç¸½ç®¡èˆ‡ç£ç¢Ÿç€è¦½**ï¼šå·¦å´æä¾›æª”æ¡ˆæ¨¹èˆ‡ç£ç¢Ÿæ¸…å–®ï¼Œå¯å¿«é€Ÿåœ¨æœ¬æ©Ÿè³‡æ–™å¤¾ä¸­ç€è¦½èˆ‡é–‹å•Ÿ Markdown æª”æ¡ˆã€‚
+- **åŒ¯å‡ºåŠŸèƒ½**ï¼šæ”¯æ´å°‡ Markdown åŒ¯å‡ºç‚º **PDF**ï¼ˆQuestPDFã€å¯é¸æ“‡ A4 / Letter / Legal èˆ‡ç›´å‘ / æ©«å‘ã€é ç¢¼ï¼‰èˆ‡ **HTML**ï¼ˆå«æ¨£å¼ï¼‰ã€‚
+- **æœªå„²å­˜è®Šæ›´ä¿è­·**ï¼šåµæ¸¬ç·¨è¼¯ä¸­çš„è®Šæ›´ï¼Œé—œé–‰è¦–çª—æˆ–æŒ‰ä¸‹é›¢é–‹å‰æœƒè©¢å•æ˜¯å¦å…ˆå„²å­˜ï¼Œé¿å…èª¤é—œé€ æˆå…§å®¹éºå¤±ã€‚
+- **MVVM æ¶æ§‹**ï¼šä»¥ CommunityToolkit.MVVM å»ºæ§‹ ViewModelï¼Œç¶­æŒè‰¯å¥½å¯è®€æ€§èˆ‡å¯ç¶­è­·æ€§ã€‚
+- **æ“´å……æ€§è¨­è¨ˆ**ï¼šåŒ¯å‡ºæ¨¡çµ„é ç•™ DOCX / ODF ç­‰æ ¼å¼çš„æ“´å……é»ï¼Œæœªä¾†å¯ä¾éœ€æ±‚æ“´å……ã€‚
 
-## ¥\¯à¯S¦â
+## æˆªåœ–
 
-### ?? Markdown ¹wÄı
-- §Y®É´è¬V Markdown ¬°¬üÆ[ªº HTML ®æ¦¡
-- ¤ä´© GitHub Flavored Markdown (GFM)
-- ¤ä´©ªí®æ¡Bµ{¦¡½X°Ï¶ô¡B¼Æ¾Ç¤½¦¡µ¥¶i¶¥»yªk
+> ä¸‹åˆ—è·¯å¾‘ç‚ºç¯„ä¾‹ï¼Œå¯¦éš›å°ˆæ¡ˆä¸­è«‹å°‡å°æ‡‰åœ–ç‰‡æ”¾åœ¨ `docs/screenshots` è³‡æ–™å¤¾ã€‚
 
-### ?? ¦hºØ¥DÃD
-´£¨Ñ 13 ºØºë¿ï¥DÃD¡Aº¡¨¬¤£¦P¾\Åª»İ¨D¡G
+- é è¦½æ¨¡å¼ï¼š![Preview](docs/screenshots/preview-mode.png)
+- ç·¨è¼¯æ¨¡å¼ï¼š![Edit](docs/screenshots/edit-mode.png)
+- ä¸»é¡Œåˆ‡æ›ï¼š![Themes](docs/screenshots/themes.png)
 
-| Ãş«¬ | ¥DÃD |
-|------|------|
-| **°ò¥»** | ²L¦â¡B²`¦â |
-| **VS Code ­·®æ** | One Dark Pro¡BDracula¡BNord¡BMonokai |
-| **Solarized** | Solarized Dark¡BSolarized Light |
-| **GitHub** | GitHub Dark¡BGitHub Light |
-| **Å@²´** | Å@²´ºñ¡B·x¦â¦Ì¶À |
-| **»²§U¥\¯à** | °ª¹ï¤ñ |
+## å®‰è£èˆ‡ä½¿ç”¨ï¼ˆä½¿ç”¨ç™¼è¡Œç‰ˆæœ¬ï¼‰
 
-### ?? ½s¿è¥\¯à
-- ¥ª¥k¤À³Îµø¹Ï¡G¥ª°¼½s¿è­ì©l½X¡A¥k°¼§Y®É¹wÄı
-- »yªk°ª«GÅã¥Ü
-- ¦Û°ÊÀx¦s´£¥Ü
+1. å‰å¾€ GitHub å°ˆæ¡ˆé é¢çš„ **Releases**ï¼Œä¸‹è¼‰æœ€æ–°çš„ Windows å®‰è£æª”æˆ–å…å®‰è£å£“ç¸®æª”ã€‚
+2. è‹¥ä½¿ç”¨å®‰è£ç¨‹å¼ï¼ˆä¾‹å¦‚ `MD_Viewer_Setup_v1.0.0_x64.exe`ï¼‰ï¼Œä¾ç…§å®‰è£ç²¾éˆå®Œæˆå®‰è£å¾Œï¼Œåœ¨é–‹å§‹åŠŸèƒ½è¡¨æœå°‹ã€ŒMD Viewerã€å•Ÿå‹•ã€‚
+3. è‹¥ä½¿ç”¨å…å®‰è£ç‰ˆå£“ç¸®æª”ï¼ˆä¾‹å¦‚ `MD_Viewer-v1.0.0-win-x64.zip`ï¼‰ï¼š
+   - è§£å£“ç¸®åˆ°ä»»æ„è³‡æ–™å¤¾ï¼ˆå»ºè­°éç³»çµ±ä¿è­·è·¯å¾‘ï¼Œä¾‹å¦‚ `D:\Apps\MD_Viewer\`ï¼‰ã€‚
+   - åŸ·è¡Œè³‡æ–™å¤¾ä¸­çš„ `MD_Viewer.vbs`ï¼ˆæ¨è–¦ï¼‰æˆ– `MD_Viewer.bat` å•Ÿå‹•ç¨‹å¼ã€‚
 
-### ?? ¶×¥X¥\¯à
-- **PDF** - ¤ä´© A4/Letter/Legal ¯È±i¤j¤p¡A¥i¥[¤J­¶½X
-- **HTML** - §¹¾ã¼Ë¦¡ªº¿W¥ß HTML ÀÉ®×
+### ç³»çµ±éœ€æ±‚ï¼ˆåŸ·è¡Œå·²ç™¼è¡Œç‰ˆæœ¬ï¼‰
 
-### ?? ÀÉ®×ÂsÄı
-- ¤º«ØÀÉ®×¾ğª¬ÂsÄı¾¹
-- ¤ä´©©Ò¦³¥»¾÷ºÏºĞ
-- §Ö³t®i¶}/¦¬¦X¸ê®Æ§¨
+- Windows 10 ç‰ˆæœ¬ 19041ï¼ˆæˆ–æ›´æ–°ç‰ˆæœ¬ï¼‰
+- x64 è™•ç†å™¨
 
----
+## å¾åŸå§‹ç¢¼å»ºç½®
 
-## ¤U¸ü¦w¸Ë
+### å…ˆæ±ºæ¢ä»¶
 
-### Windows
+- Visual Studio 2022ï¼ˆå»ºè­°æœ€æ–°ç‰ˆï¼‰ï¼Œå®‰è£ï¼š
+  - **.NET Multiplatform App UI development** å·¥ä½œè² è¼‰ï¼ˆMAUIï¼‰
+  - å°æ‡‰ç‰ˆæœ¬çš„ **.NET SDK**ï¼ˆç›®å‰å°ˆæ¡ˆä½¿ç”¨ `net10.0` / `net10.0-windows10.0.19041.0`ï¼‰
 
-±q [Releases](https://github.com/sjvann/MD_Viewer/releases) ­¶­±¤U¸ü³Ì·sª©¥»¡G
-
-| ÀÉ®× | »¡©ú |
-|------|------|
-| `MD_Viewer-win-x64.zip` | Windows 64 ¦ì¤¸ª©¥» |
-| `MD_Viewer-win-x64-selfcontained.zip` | ¿W¥ßª©¥»¡]¤£»İ¦w¸Ë .NET¡^ |
-
-#### ¨t²Î»İ¨D
-- Windows 10 ª©¥» 1903 (19041) ©Î§ó·sª©¥»
-- .NET 10 Runtime¡]¦p¨Ï¥Î«D¿W¥ßª©¥»¡^
-
-### ¨ä¥L¥­¥x
-- **Android** - ¶}µo¤¤
-- **iOS** - ¶}µo¤¤
-- **macOS** - ¶}µo¤¤
-
----
-
-## ¨Ï¥Î»¡©ú
-
-### °ò¥»¾Ş§@
-
-1. **¶}±ÒÀÉ®×**
-   - ±q¥ª°¼ÀÉ®×¾ğ¿ï¾ÜºÏºĞ
-   - ®i¶}¸ê®Æ§¨¡AÂIÀ» `.md` ÀÉ®×
-
-2. **¤Á´«¥DÃD**
-   - ÂIÀ»¥k¤W¨¤¡u¥DÃD¡v¤U©Ô¿ï³æ
-   - ¿ï¾Ü³ßÅwªº°t¦â¤è®×
-
-3. **½s¿è¼Ò¦¡**
-   - ÂIÀ»¡u½s¿è¡v«ö¶s¶i¤J½s¿è¼Ò¦¡
-   - ¥ª°¼½s¿è Markdown¡A¥k°¼§Y®É¹wÄı
-   - ÂIÀ»¡uÀx¦s¡v«O¦sÅÜ§ó
-
-4. **¶×¥X¤å¥ó**
-   - ÂIÀ»¡u¶×¥X PDF¡v©Î¡u¶×¥X HTML¡v
-   - ¿ï¾ÜÀx¦s¦ì¸m
-
-### §Ö³tÁä
-
-| §Ö³tÁä | ¥\¯à |
-|--------|------|
-| «İ¹ê§@ | - |
-
----
-
-## ¿Ã¹õºI¹Ï
-
-### ¹wÄı¼Ò¦¡
-![¹wÄı¼Ò¦¡](docs/screenshots/preview-mode.png)
-
-### ½s¿è¼Ò¦¡
-![½s¿è¼Ò¦¡](docs/screenshots/edit-mode.png)
-
-### ¥DÃD¿ï¾Ü
-![¥DÃD¿ï¾Ü](docs/screenshots/themes.png)
-
----
-
-## ¶}µo«ü«n
-
-### Àô¹Ò»İ¨D
-
-- Visual Studio 2022 17.10 ©Î§ó·sª©¥»
-- .NET 10 SDK
-- Windows 10 SDK (10.0.19041.0)
-
-### «Ø¸m±M®×
+### å»ºç½®æ­¥é©Ÿ
 
 ```bash
-# Clone ±M®×
-git clone https://github.com/sjvann/MD_Viewer.git
+git clone https://github.com/<your-account>/MD_Viewer.git
 cd MD_Viewer
-
-# ÁÙ­ì®M¥ó
-dotnet restore
-
-# «Ø¸m
-dotnet build
-
-# °õ¦æ
-dotnet run --project MD_Viewer
+dotnet build MD_Viewer.sln
 ```
 
-### ±M®×µ²ºc
+æˆ–æ˜¯é€é Visual Studio é–‹å•Ÿ `MD_Viewer.sln`ï¼š
 
-```
-MD_Viewer/
-¢u¢w¢w MD_Viewer/                 # ¥D­n MAUI À³¥Îµ{¦¡
-¢x   ¢u¢w¢w Platforms/            # ¥­¥x¯S©w¹ê§@
-¢x   ¢x   ¢u¢w¢w Windows/          # Windows ¥­¥x
-¢x   ¢x   ¢u¢w¢w Android/          # Android ¥­¥x
-¢x   ¢x   ¢u¢w¢w iOS/              # iOS ¥­¥x
-¢x   ¢x   ¢|¢w¢w MacCatalyst/      # Mac ¥­¥x
-¢x   ¢u¢w¢w Services/             # ªA°È¼h
-¢x   ¢u¢w¢w ViewModels/           # MVVM ViewModels
-¢x   ¢u¢w¢w Views/                # UI µø¹Ï¤¸¥ó
-¢x   ¢|¢w¢w MainPage.xaml         # ¥D­¶­±
-¢u¢w¢w MD_Viewer.Shared/         # ¦@¥Î¼Ò«¬©M¤¶­±
-¢x   ¢u¢w¢w Models/               # ¸ê®Æ¼Ò«¬
-¢x   ¢|¢w¢w ViewModels/           # ViewModel ¤¶­±
-¢u¢w¢w MD_Viewer.Blazor/         # Blazor ¤¸¥ó¡]³Æ¥Î¡^
-¢|¢w¢w README.md
+1. é¸æ“‡å•Ÿå‹•å°ˆæ¡ˆç‚º **MD_Viewer**ã€‚
+2. ç›®æ¨™å¹³å°é¸æ“‡ **Windows Machine**ã€‚
+3. æŒ‰ä¸‹ F5ï¼ˆåµéŒ¯åŸ·è¡Œï¼‰æˆ– Ctrl+F5ï¼ˆç›´æ¥åŸ·è¡Œï¼‰ã€‚
+
+## å°ˆæ¡ˆçµæ§‹æ¦‚è§€
+
+```text
+MD_Viewer/                # MAUI ä¸»å°ˆæ¡ˆï¼ˆWindows Appï¼‰
+MD_Viewer.Shared/         # å…±ç”¨ ViewModel / Models / æœå‹™
+MD_Viewer.Blazor/         # Markdown é è¦½çš„ Blazor å…ƒä»¶
+docs/                     # æ¶æ§‹è¨­è¨ˆã€æŠ€è¡“åˆ†æã€æ¸¬è©¦è¦åŠƒç­‰æ–‡ä»¶
+docs/screenshots/         # æˆªåœ–ï¼ˆä¾› README èˆ‡èªªæ˜æ–‡ä»¶ä½¿ç”¨ï¼‰
+scripts/                  # ç°½ç« ã€é›œæ¹Šè¨ˆç®—ç­‰ PowerShell è…³æœ¬
+release/                  # å°è£å¾Œçš„åŸ·è¡Œæª”çµæ§‹èˆ‡èªªæ˜
+publish/                  # dotnet publish / é‡‹å‡ºç‰ˆè¼¸å‡º
 ```
 
-### §Ş³N¬[ºc
+## æ¶æ§‹èˆ‡æŠ€è¡“
 
-| §Ş³N | ¥Î³~ |
-|------|------|
-| .NET MAUI | ¸ó¥­¥x UI ®Ø¬[ |
-| CommunityToolkit.Mvvm | MVVM ¼Ò¦¡¹ê§@ |
-| CommunityToolkit.Maui | MAUI ÂX¥R¥\¯à |
-| Markdig | Markdown ¸ÑªR¾¹ |
-| QuestPDF | PDF ¥Í¦¨ |
-| WebView | HTML ¹wÄı´è¬V |
+- **UI / å¹³å°**ï¼š.NET MAUIï¼ˆç›®å‰ç›®æ¨™ Windows 10/11ï¼‰ï¼Œä½¿ç”¨ Shell + XAML ä»‹é¢ã€‚
+- **é è¦½å¼•æ“**ï¼šBlazor WebView + marked.js + highlight.js + KaTeX ç­‰å‰ç«¯å¥—ä»¶ï¼ˆé€éå…§åµŒç¶²é å‘ˆç¾ï¼‰ã€‚
+- **Markdown è§£æ**ï¼šMarkdigï¼ˆC# ç«¯ï¼‰ï¼Œå•Ÿç”¨å¤šç¨®é€²éšæ“´å……ã€‚
+- **åŒ¯å‡º PDF**ï¼šQuestPDFï¼Œä½¿ç”¨ Markdown AST ç›´æ¥ç”¢ç”Ÿç‰ˆé¢ã€‚
+- **æ¶æ§‹é¢¨æ ¼**ï¼šMVVMï¼ˆCommunityToolkit.MVVMï¼‰ï¼Œä»¥ DI æ³¨å…¥æœå‹™èˆ‡ ViewModelã€‚
+- **å¹³å°æŠ½è±¡**ï¼šIPlatformFileSystem / IPlatformFilePicker ç­‰ä»‹é¢ï¼Œå°æ‡‰ Windows / å¾ŒçºŒå…¶ä»–å¹³å°å¯¦ä½œã€‚
 
-### ¦h¥­¥x¤ä´©
+## ç›¸é—œæ–‡ä»¶
 
-¥Ø«e±M®×³]©w¬° Windows-only¡C­Y­n±Ò¥Î¨ä¥L¥­¥x¡A­×§ï `MD_Viewer.csproj`¡G
+- `CHANGELOG.md`ï¼šç‰ˆæœ¬è®Šæ›´ç´€éŒ„ã€‚
+- `docs/NETç‰ˆæœ¬èªªæ˜.md`ï¼šå„å°ˆæ¡ˆ Target Framework / .NET ç‰ˆæœ¬èªªæ˜ã€‚
+- `docs/æŠ€è¡“åˆ†æå ±å‘Š.md`ï¼šæŠ€è¡“é¸å‹èˆ‡å¯¦ä½œç´°ç¯€ã€‚
+- `docs/é¿å…é˜²æ¯’è»Ÿé«”èª¤åˆ¤æŒ‡å—.md`ã€`é˜²æ¯’è»Ÿé«”èª¤åˆ¤-å¿«é€Ÿè§£æ±º.md`ï¼šèˆ‡é˜²æ¯’è»Ÿé«”èª¤åˆ¤ç›¸é—œçš„èªªæ˜ã€‚
+- `scripts/README.md`ï¼šç°½ç« èˆ‡é›œæ¹Šè¨ˆç®—è…³æœ¬çš„ä½¿ç”¨æ–¹å¼ã€‚
 
-```xml
-<!-- ¨ú®øµù¸Ñ¥H±Ò¥Î¦h¥­¥x -->
-<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-windows10.0.19041.0</TargetFrameworks>
-```
+## æˆæ¬Šæ¢æ¬¾
+
+æœ¬å°ˆæ¡ˆæ¡ç”¨ [MIT License](LICENSE) æˆæ¬Šï¼Œä½ å¯ä»¥è‡ªç”±ä½¿ç”¨ã€ä¿®æ”¹èˆ‡æ•£ä½ˆæœ¬ç¨‹å¼ç¢¼ï¼Œä½†è«‹ä¿ç•™è‘—ä½œæ¬Šèˆ‡æˆæ¬Šå®£å‘Šã€‚
 
 ---
 
-## °^Äm«ü«n
-
-Åwªï´£¥æ Issue ©M Pull Request¡I
-
-1. Fork ¦¹±M®×
-2. «Ø¥ß¥\¯à¤À¤ä (`git checkout -b feature/AmazingFeature`)
-3. ´£¥æÅÜ§ó (`git commit -m 'Add some AmazingFeature'`)
-4. ±À°e¨ì¤À¤ä (`git push origin feature/AmazingFeature`)
-5. ¶}±Ò Pull Request
-
----
-
-## ±ÂÅv±ø´Ú
-
-¥»±M®×±Ä¥Î MIT ±ÂÅv±ø´Ú - ¸Ô¨£ [LICENSE](LICENSE) ÀÉ®×¡C
-
----
-
-## ­PÁÂ
-
-- [Markdig](https://github.com/xoofx/markdig) - Markdown ¸ÑªR¾¹
-- [QuestPDF](https://github.com/QuestPDF/QuestPDF) - PDF ¥Í¦¨®w
-- [VS Theme Pack](https://marketplace.visualstudio.com/items?itemName=idex.vsthemepack) - ¥DÃD°t¦âÆF·P
-
----
-
-<p align="center">
-  Made with ?? by <a href="https://github.com/sjvann">sjvann</a>
-</p>
+å¦‚æœä½ åœ¨ä½¿ç”¨æˆ–å»ºç½®éç¨‹ä¸­é‡åˆ°ä»»ä½•å•é¡Œï¼Œæ­¡è¿é€é Issue å›å ±æˆ–æäº¤ PR å”åŠ©æ”¹é€²ã€‚

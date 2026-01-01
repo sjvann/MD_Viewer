@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -58,6 +59,8 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 
 		// 設定 EditViewModel 的 PreviewViewModel 引用（用於即時同步）
 		EditViewModel.PreviewViewModel = PreviewViewModel;
+			// 監聽編輯內容變更，以追蹤未儲存變更狀態
+			EditViewModel.PropertyChanged += OnEditViewModelPropertyChanged;
 
 		// 註冊訊息接收
 		_messenger.Register<FileSelectedMessage>(this, OnFileSelected);
@@ -69,15 +72,24 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	/// <summary>
 	/// 初始化支援的匯出格式
 	/// </summary>
-	private void InitializeExportFormats()
-	{
-		var formats = _exportService.GetSupportedFormats();
-		_supportedExportFormats.Clear();
-		foreach (var format in formats)
+		private void InitializeExportFormats()
 		{
-			_supportedExportFormats.Add(format);
+			var formats = _exportService.GetSupportedFormats();
+			_supportedExportFormats.Clear();
+			foreach (var format in formats)
+			{
+				_supportedExportFormats.Add(format);
+			}
 		}
-	}
+
+		private void OnEditViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(IEditViewModel.MarkdownContent))
+			{
+				OnPropertyChanged(nameof(HasUnsavedChanges));
+				OnPropertyChanged(nameof(CurrentFileDisplayName));
+			}
+		}
 
 	/// <summary>
 	/// 檔案樹 ViewModel
@@ -97,24 +109,24 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	/// <summary>
 	/// 當前檢視模式
 	/// </summary>
-	public ViewMode CurrentMode
-	{
-		get => _currentMode;
-		set
+		public ViewMode CurrentMode
 		{
-			if (SetProperty(ref _currentMode, value))
+			get => _currentMode;
+			set
 			{
-				// 當模式變更時，通知相關屬性更新
-				OnPropertyChanged(nameof(IsEditMode));
-				OnPropertyChanged(nameof(EditButtonText));
-				// 當切換到編輯模式時，載入內容到編輯器
-				if (value == ViewMode.Edit && !string.IsNullOrEmpty(CurrentFileContent))
+				if (SetProperty(ref _currentMode, value))
 				{
-					EditViewModel?.LoadContent(CurrentFileContent);
+					// 當模式變更時，通知相關屬性更新
+					OnPropertyChanged(nameof(IsEditMode));
+					OnPropertyChanged(nameof(EditButtonText));
+					// 當切換到編輯模式時，載入內容到編輯器
+					if (value == ViewMode.Edit && !string.IsNullOrEmpty(CurrentFileContent))
+					{
+						EditViewModel?.LoadContent(CurrentFileContent);
+					}
 				}
 			}
 		}
-	}
 
 	/// <summary>
 	/// 當前選中的檔案
@@ -129,6 +141,10 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 				// 當檔案變更時，通知 CanSave 更新
 				OnPropertyChanged(nameof(CanSave));
 				SaveFileCommand?.NotifyCanExecuteChanged();
+					OnPropertyChanged(nameof(CanReload));
+					ReloadFileCommand?.NotifyCanExecuteChanged();
+					OnPropertyChanged(nameof(CurrentFileDisplayName));
+					OnPropertyChanged(nameof(HasUnsavedChanges));
 			}
 		}
 	}
@@ -149,6 +165,8 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 				// 通知 CanExport 更新
 				OnPropertyChanged(nameof(CanExport));
 				ToggleExportMenuCommand?.NotifyCanExecuteChanged();
+					OnPropertyChanged(nameof(HasUnsavedChanges));
+					OnPropertyChanged(nameof(CurrentFileDisplayName));
 			}
 		}
 	}
@@ -159,7 +177,14 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	public bool IsLoading
 	{
 		get => _isLoading;
-		set => SetProperty(ref _isLoading, value);
+			set
+			{
+				if (SetProperty(ref _isLoading, value))
+				{
+					OnPropertyChanged(nameof(CanReload));
+					ReloadFileCommand?.NotifyCanExecuteChanged();
+				}
+			}
 	}
 
 	/// <summary>
@@ -180,6 +205,21 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	/// 編輯按鈕文字（根據當前模式切換）
 	/// </summary>
 	public string EditButtonText => IsEditMode ? "預覽" : "編輯";
+
+		/// <summary>
+		/// 當前檔案是否有未儲存的變更
+		/// </summary>
+		public bool HasUnsavedChanges =>
+			EditViewModel != null &&
+			(EditViewModel.MarkdownContent ?? string.Empty) != (CurrentFileContent ?? string.Empty);
+
+		/// <summary>
+		/// 顯示在工具列中的目前檔案名稱
+		/// </summary>
+		public string CurrentFileDisplayName =>
+			CurrentFile == null
+				? "尚未開啟檔案"
+				: HasUnsavedChanges ? $"{CurrentFile.Name} *" : CurrentFile.Name;
 
 	/// <summary>
 	/// 是否可以匯出（有當前檔案內容且非匯出中）
@@ -259,6 +299,8 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 				// 當儲存狀態變更時，通知 CanSave 更新
 				OnPropertyChanged(nameof(CanSave));
 				SaveFileCommand?.NotifyCanExecuteChanged();
+					OnPropertyChanged(nameof(CanReload));
+					ReloadFileCommand?.NotifyCanExecuteChanged();
 			}
 		}
 	}
@@ -277,6 +319,11 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	/// </summary>
 	public bool CanSave => CurrentFile != null && !IsSaving;
 
+		/// <summary>
+		/// 是否可以重新載入檔案
+		/// </summary>
+		public bool CanReload => CurrentFile != null && !IsLoading && !IsSaving;
+
 	/// <summary>
 	/// 支援的匯出格式列表
 	/// </summary>
@@ -291,6 +338,21 @@ public partial class MainViewModel : ObservableObject, IMainViewModel
 	{
 		CurrentMode = CurrentMode == ViewMode.Preview ? ViewMode.Edit : ViewMode.Preview;
 	}
+
+		/// <summary>
+		/// 重新載入目前檔案內容
+		/// </summary>
+		[RelayCommand(CanExecute = nameof(CanReload))]
+		public async Task ReloadFileAsync()
+		{
+			if (CurrentFile == null || string.IsNullOrEmpty(CurrentFile.Path))
+			{
+				ErrorMessage = "沒有選中的檔案";
+				return;
+			}
+		
+			await LoadFileAsync(CurrentFile.Path);
+		}
 
 	/// <summary>
 	/// 切換匯出選單顯示狀態

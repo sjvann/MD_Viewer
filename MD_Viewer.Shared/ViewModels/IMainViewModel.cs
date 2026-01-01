@@ -9,6 +9,9 @@ public interface IMainViewModel : INotifyPropertyChanged
 {
     string EditButtonText { get; }
     bool CanSave { get; }
+	    bool CanReload { get; }
+	    string CurrentFileDisplayName { get; }
+	    bool HasUnsavedChanges { get; }
     string? SaveMessage { get; }
     bool IsExporting { get; }
     string? ExportMessage { get; }
@@ -29,6 +32,7 @@ public interface IMainViewModel : INotifyPropertyChanged
 
     void ToggleEditMode();
     Task SaveFileAsync();
+	    Task ReloadFileAsync();
     void ToggleExportMenu();
     void CloseExportMenu();
     void SetPageSizeA4();

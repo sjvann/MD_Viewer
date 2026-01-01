@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <!-- 多平台支援 - 目前只啟用 Windows，其他平台暫時註解 -->
-    <TargetFrameworks>net10.0-windows10.0.19041.0</TargetFrameworks>
-    <!-- 
-    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-windows10.0.19041.0</TargetFrameworks>
-    -->
+	  <PropertyGroup>
+	    <!-- 目前只針對 Windows 單一平台執行，簡化執行指令 -->
+	    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+	    <!-- 如需重新啟用多平台，再改回 TargetFrameworks 並加入其他平台 -->
     
     <!-- 各平台最低版本需求（啟用多平台時取消註解） -->
     <!--
